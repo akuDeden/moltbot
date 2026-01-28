@@ -74,28 +74,37 @@ Support berbagai format:
 **DATABASE:** Development Database (32e29af7d7dd4df69310270de8830d1a)
 
 **ACTION:**
-1. **Load Notion credentials:**
-   - Try: `~/.clawdbot/credentials/notion_api_key`
-   - Fallback: `/Users/ahmadfaris/moltbot-workspace/notion-credentials.json` (key: `notion_token`)
-
-2. **Query Notion API directly:**
+1. **Set environment:**
    ```bash
-   # Search for Sprint N
-   curl -X POST "https://api.notion.com/v1/search" \
-     -H "Authorization: Bearer $NOTION_KEY" \
-     -H "Notion-Version: 2025-09-03" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "Sprint 2", "filter": {"property": "object", "value": "page"}, "page_size": 100}'
+   export NOTION_TOKEN=$(cat /Users/ahmadfaris/moltbot-workspace/notion-credentials.json | jq -r .notion_token)
    ```
 
-3. **Filter results:** Only include pages where `parent.database_id` = `32e29af7d7dd4df69310270de8830d1a` (remove dashes when comparing)
+2. **Execute appropriate script:**
 
-4. **Parse and format:** Extract Name, Status, Sprint, Assignee properties
+   **For Sprint-specific queries:**
+   ```bash
+   cd /Users/ahmadfaris/moltbot-workspace
+   python3 scripts/notion_reader/list_all_pages.py --search "Sprint 2" --show-pages
+   ```
+   
+   **For general dev tickets:**
+   ```bash
+   cd /Users/ahmadfaris/moltbot-workspace
+   python3 scripts/notion_reader/list_dev_tickets.py
+   ```
+   
+   **Filter by status:**
+   ```bash
+   python3 scripts/notion_reader/list_dev_tickets.py --status "In Progress"
+   ```
+
+3. **Parse output:** Script automatically formats with emoji status and filters by dev database
 
 **Examples:**
-- "cek tiket sprint 2" → Query Notion API with query="Sprint 2", filter by dev DB
-- "list development tickets" → Query Notion API, filter by dev DB, sort by created
-- "tampilkan sprint 83" → Query Notion API with query="Sprint 83", filter by dev DB
+- "cek tiket sprint 2" → `list_all_pages.py --search "Sprint 2"`
+- "list development tickets" → `list_dev_tickets.py`
+- "tampilkan sprint 83" → `list_all_pages.py --search "Sprint 83"`
+- "in progress dev tickets" → `list_dev_tickets.py --status "In Progress"`
 
 ---
 
@@ -106,27 +115,38 @@ Support berbagai format:
 **DATABASE:** Bug Database (482be0a206b044d99fff5798db2381e4)
 
 **ACTION:**
-1. **Load Notion credentials** (same as Command 2)
+1. **Set environment:** (same as Command 2)
 
-2. **Query Notion API:**
+2. **Execute bug scripts:**
+
+   **For Sprint bugs:**
    ```bash
-   # Search for bugs (optionally with sprint keyword)
-   curl -X POST "https://api.notion.com/v1/search" \
-     -H "Authorization: Bearer $NOTION_KEY" \
-     -H "Notion-Version: 2025-09-03" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "Sprint 1", "filter": {"property": "object", "value": "page"}, "page_size": 100}'
+   cd /Users/ahmadfaris/moltbot-workspace
+   python3 scripts/notion_reader/list_all_pages.py --search "Sprint 1 Bug"
+   ```
+   
+   **For general bugs:**
+   ```bash
+   python3 scripts/notion_reader/list_bug_tickets.py
+   ```
+   
+   **Filter by priority:**
+   ```bash
+   python3 scripts/notion_reader/list_bug_tickets.py --priority "High"
+   ```
+   
+   **Filter by status:**
+   ```bash
+   python3 scripts/notion_reader/list_bug_tickets.py --status "Open"
    ```
 
-3. **Filter results:** Only include pages where `parent.database_id` = `482be0a206b044d99fff5798db2381e4` (bug DB)
-
-4. **Additional filtering:** Filter out resolved/closed bugs (check Status property)
-
-5. **Parse and format:** Extract Name, Status, Severity, Priority, Assignee
+3. **Parse output:** Script automatically formats and filters by bug database
 
 **Examples:**
-- "list bug sprint 1" → Query with query="Sprint 1", filter by bug DB
-- "ada bug apa?" → Query bug DB, filter Status != "Resolved"/"Closed"
+- "list bug sprint 1" → `list_all_pages.py --search "Sprint 1 Bug"`
+- "ada bug apa?" → `list_bug_tickets.py`
+- "high priority bugs" → `list_bug_tickets.py --priority "High"`
+- "open bugs" → `list_bug_tickets.py --status "Open"`
 - "bug terbaru" → Run `list-bug-tickets.py`
 - "ada bug apa aja" → Run `list-bug-tickets.py 10`
 

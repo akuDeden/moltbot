@@ -137,32 +137,44 @@ Bot: [detects "review tiket" → loads persona/QA.md → executes script]
 - **Data Source ID:** Check via Notion API search  
 - **Use for:** Bugs, Issues, Errors, QA findings
 
-### How to Query Notion (Use Notion Skill!)
+### How to Query Notion
 
-**DO NOT use sprint-specific Python scripts!** Use the Notion API directly via curl:
+**Use the modular `notion_reader/` scripts** - lebih terstruktur dan reusable!
 
-**Example: Search Sprint N tickets in dev database:**
+**📦 Available Scripts:**
+
+1. **List Dev Tickets:** `scripts/notion_reader/list_dev_tickets.py`
+   - Automatically queries dev database (32e29af7d7dd4df69310270de8830d1a)
+   - Supports filtering by status
+   - Example: `python3 scripts/notion_reader/list_dev_tickets.py --status "In Progress"`
+
+2. **List Bug Tickets:** `scripts/notion_reader/list_bug_tickets.py` 
+   - Automatically queries bug database (482be0a206b044d99fff5798db2381e4)
+   - Supports filtering by status and priority
+   - Example: `python3 scripts/notion_reader/list_bug_tickets.py --priority "High"`
+
+3. **Search All Pages:** `scripts/notion_reader/list_all_pages.py`
+   - Generic search across workspace
+   - Example: `python3 scripts/notion_reader/list_all_pages.py --search "Sprint 2"`
+
+4. **Clawbot Integration:** `scripts/notion_reader/clawbot_ticket_reader.py`
+   - Read full ticket with content
+   - Prepare context for AI agent
+   - Example: `python3 scripts/notion_reader/clawbot_ticket_reader.py --ticket-id <page_id>`
+
+**Environment Setup:**
 ```bash
-NOTION_KEY=$(cat ~/.clawdbot/credentials/notion_api_key 2>/dev/null || cat /Users/ahmadfaris/moltbot-workspace/notion-credentials.json | jq -r .notion_token)
-
-# Search for Sprint pages
-curl -X POST "https://api.notion.com/v1/search" \
-  -H "Authorization: Bearer $NOTION_KEY" \
-  -H "Notion-Version: 2025-09-03" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Sprint 2", "filter": {"property": "object", "value": "page"}}'
+export NOTION_TOKEN=$(cat /Users/ahmadfaris/moltbot-workspace/notion-credentials.json | jq -r .notion_token)
 ```
 
-**Filter results by database:** Check `parent.database_id` matches `32e29af7d7dd4df69310270de8830d1a` (dev) or `482be0a206b044d99fff5798db2381e4` (bug)
+### Request Type → Action Pattern
 
-### Request Type → Query Pattern
-
-| User Request | Action |
-|--------------|--------|
-| "sprint N tickets", "tiket sprint N" | Search "Sprint N" + filter by dev database |
-| "bug sprint N", "list bug" | Search "Sprint N" + filter by bug database |
-| "cari tiket [keyword]" | Search "[keyword]" + filter by database |
-| "list recent dev tickets" | Query dev database with sort by created_time |
+| User Request | Script to Use |
+|--------------|---------------|
+| "sprint N tickets", "list dev" | `list_dev_tickets.py` atau `list_all_pages.py --search "Sprint N"` |
+| "bug sprint N", "list bugs" | `list_bug_tickets.py` atau `list_all_pages.py --search "Sprint N Bug"` |
+| "cari tiket [keyword]" | `list_all_pages.py --search "[keyword]"` |
+| "read tiket [ID]" | `clawbot_ticket_reader.py --ticket-id [ID]` |
 
 **⚠️ DO NOT query feedback or other databases unless explicitly requested!**
 
