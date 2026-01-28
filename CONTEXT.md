@@ -129,28 +129,40 @@ Bot: [detects "review tiket" → loads persona/QA.md → executes script]
 
 ### Development Tasks Database
 - **ID:** `32e29af7d7dd4df69310270de8830d1a`
+- **Data Source ID:** Check via Notion API search
 - **Use for:** Development tickets, Sprint tasks, Features, Improvements
-- **Scripts:**
-  - `scripts/list-dev-tickets.py` - List recent dev tickets
-  - `scripts/search-sprint1.py` - Sprint 1 dev tickets
-  - `scripts/search-sprint2.py` - Sprint 2 dev tickets
-  - `scripts/search-ticket.py` - General search
 
 ### Bug Database
 - **ID:** `482be0a206b044d99fff5798db2381e4`
+- **Data Source ID:** Check via Notion API search  
 - **Use for:** Bugs, Issues, Errors, QA findings
-- **Scripts:**
-  - `scripts/list-bug-tickets.py` - List recent bugs
-  - `scripts/search-sprint1-bugs.py` - Sprint 1 bugs
 
-### Request Type → Script Mapping
+### How to Query Notion (Use Notion Skill!)
 
-| User Request Keywords | Correct Script |
-|----------------------|----------------|
-| "sprint 2", "tiket sprint", "dev tickets" | `search-sprint2.py` |
-| "bug sprint", "list bug", "ada bug" | `search-sprint1-bugs.py` or `list-bug-tickets.py` |
-| "development tickets", "task dev" | `list-dev-tickets.py` |
-| "cari tiket [keyword]" | `search-ticket.py "[keyword]"` |
+**DO NOT use sprint-specific Python scripts!** Use the Notion API directly via curl:
+
+**Example: Search Sprint N tickets in dev database:**
+```bash
+NOTION_KEY=$(cat ~/.clawdbot/credentials/notion_api_key 2>/dev/null || cat /Users/ahmadfaris/moltbot-workspace/notion-credentials.json | jq -r .notion_token)
+
+# Search for Sprint pages
+curl -X POST "https://api.notion.com/v1/search" \
+  -H "Authorization: Bearer $NOTION_KEY" \
+  -H "Notion-Version: 2025-09-03" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Sprint 2", "filter": {"property": "object", "value": "page"}}'
+```
+
+**Filter results by database:** Check `parent.database_id` matches `32e29af7d7dd4df69310270de8830d1a` (dev) or `482be0a206b044d99fff5798db2381e4` (bug)
+
+### Request Type → Query Pattern
+
+| User Request | Action |
+|--------------|--------|
+| "sprint N tickets", "tiket sprint N" | Search "Sprint N" + filter by dev database |
+| "bug sprint N", "list bug" | Search "Sprint N" + filter by bug database |
+| "cari tiket [keyword]" | Search "[keyword]" + filter by database |
+| "list recent dev tickets" | Query dev database with sort by created_time |
 
 **⚠️ DO NOT query feedback or other databases unless explicitly requested!**
 

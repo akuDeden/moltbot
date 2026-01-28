@@ -27,23 +27,35 @@ def load_credentials():
         print(f"❌ Error: {CREDENTIALS_FILE} is not valid JSON")
         sys.exit(1)
 
-def search_sprint2(notion):
-    """Search for pages with 'Sprint 2' or 'sprint 2'"""
+def search_sprint2(notion, database_id):
+    """Search for pages with 'Sprint 2' or 'sprint 2' in specific database"""
     try:
-        # Search for pages containing "Sprint 2"
+        # Search for Sprint 2 pages globally then filter by database
         response = notion.search(
             query="Sprint 2",
             filter={
                 "property": "object",
                 "value": "page"
             },
-            page_size=50
+            page_size=100
         )
-
+        
         results = response.get("results", [])
+        
+        # Filter to only pages in the specified database
+        target_db = database_id.replace("-", "")
+        filtered_results = []
+        
+        for result in results:
+            if result.get("parent", {}).get("type") == "database_id":
+                parent_db = result.get("parent", {}).get("database_id", "").replace("-", "")
+                
+                # Only include if from target database
+                if parent_db == target_db:
+                    filtered_results.append(result)
 
         pages = []
-        for result in results:
+        for result in filtered_results:
             # Extract page info
             title = ""
             properties = result.get("properties", {})
@@ -120,18 +132,23 @@ def main():
     # Load credentials
     creds = load_credentials()
     notion_token = creds.get("notion_token")
+    database_dev = creds.get("database_dev")
 
     if not notion_token:
         print("❌ Error: Notion token not configured")
+        sys.exit(1)
+    
+    if not database_dev:
+        print("❌ Error: Dev database ID not configured")
         sys.exit(1)
 
     # Initialize Notion client
     notion = Client(auth=notion_token)
 
-    print(f"🔍 Searching for 'Sprint 2'...\n")
+    print(f"🔍 Searching for 'Sprint 2' in dev database {database_dev}...\n")
 
-    # Get sprint 2 pages
-    pages = search_sprint2(notion)
+    # Get sprint 2 pages from dev database
+    pages = search_sprint2(notion, database_dev)
 
     if not pages:
         print("❌ No pages found with 'Sprint 2'")

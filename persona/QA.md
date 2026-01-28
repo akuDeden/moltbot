@@ -74,15 +74,28 @@ Support berbagai format:
 **DATABASE:** Development Database (32e29af7d7dd4df69310270de8830d1a)
 
 **ACTION:**
-1. **Sprint specific:** Execute `python3 /Users/ahmadfaris/moltbot-workspace/scripts/search-sprint[N].py`
-   - Sprint 1: `search-sprint1.py`
-   - Sprint 2: `search-sprint2.py`
-2. **General dev tickets:** Execute `python3 /Users/ahmadfaris/moltbot-workspace/scripts/list-dev-tickets.py [limit]`
+1. **Load Notion credentials:**
+   - Try: `~/.clawdbot/credentials/notion_api_key`
+   - Fallback: `/Users/ahmadfaris/moltbot-workspace/notion-credentials.json` (key: `notion_token`)
+
+2. **Query Notion API directly:**
+   ```bash
+   # Search for Sprint N
+   curl -X POST "https://api.notion.com/v1/search" \
+     -H "Authorization: Bearer $NOTION_KEY" \
+     -H "Notion-Version: 2025-09-03" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "Sprint 2", "filter": {"property": "object", "value": "page"}, "page_size": 100}'
+   ```
+
+3. **Filter results:** Only include pages where `parent.database_id` = `32e29af7d7dd4df69310270de8830d1a` (remove dashes when comparing)
+
+4. **Parse and format:** Extract Name, Status, Sprint, Assignee properties
 
 **Examples:**
-- "cek tiket sprint 2" → Run `search-sprint2.py`
-- "list development tickets" → Run `list-dev-tickets.py`
-- "tampilkan sprint 1" → Run `search-sprint1.py`
+- "cek tiket sprint 2" → Query Notion API with query="Sprint 2", filter by dev DB
+- "list development tickets" → Query Notion API, filter by dev DB, sort by created
+- "tampilkan sprint 83" → Query Notion API with query="Sprint 83", filter by dev DB
 
 ---
 
@@ -93,11 +106,27 @@ Support berbagai format:
 **DATABASE:** Bug Database (482be0a206b044d99fff5798db2381e4)
 
 **ACTION:**
-1. **Bug in sprint:** Execute `python3 /Users/ahmadfaris/moltbot-workspace/scripts/search-sprint1-bugs.py`
-2. **General bugs:** Execute `python3 /Users/ahmadfaris/moltbot-workspace/scripts/list-bug-tickets.py [limit]`
+1. **Load Notion credentials** (same as Command 2)
+
+2. **Query Notion API:**
+   ```bash
+   # Search for bugs (optionally with sprint keyword)
+   curl -X POST "https://api.notion.com/v1/search" \
+     -H "Authorization: Bearer $NOTION_KEY" \
+     -H "Notion-Version: 2025-09-03" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "Sprint 1", "filter": {"property": "object", "value": "page"}, "page_size": 100}'
+   ```
+
+3. **Filter results:** Only include pages where `parent.database_id` = `482be0a206b044d99fff5798db2381e4` (bug DB)
+
+4. **Additional filtering:** Filter out resolved/closed bugs (check Status property)
+
+5. **Parse and format:** Extract Name, Status, Severity, Priority, Assignee
 
 **Examples:**
-- "list bug sprint 1" → Run `search-sprint1-bugs.py`
+- "list bug sprint 1" → Query with query="Sprint 1", filter by bug DB
+- "ada bug apa?" → Query bug DB, filter Status != "Resolved"/"Closed"
 - "bug terbaru" → Run `list-bug-tickets.py`
 - "ada bug apa aja" → Run `list-bug-tickets.py 10`
 
