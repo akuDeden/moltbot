@@ -1,0 +1,287 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              🤖 NOTION DATABASE READER untuk CLAWBOT/MOLTBOT                ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  📦 FILES CREATED (11 files, ~68KB)                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+CORE SCRIPTS:
+  🔷 notion_database_reader.py      (24K)  Core library untuk query Notion
+  🔷 list_all_pages.py              (6.2K) List semua pages/databases  
+  🔷 list_dev_tickets.py            (3.0K) Query dev tickets (2 databases)
+  🔷 list_bug_tickets.py            (3.4K) Query bug tickets
+  🔷 clawbot_ticket_reader.py       (11K)  AI agent integration
+  🔷 test_notion_connection.py      (5.1K) Test connection & setup
+
+DOCUMENTATION:
+  📄 README_NOTION_SCRIPTS.md       (7.4K) Quick start & overview
+  📄 NOTION_DATABASE_GUIDE.md       (8.1K) Complete documentation
+  📄 SUMMARY.md                     (6.2K) Summary & checklist
+  📄 INDEX.txt                      (this file)
+
+SETUP:
+  ⚙️  setup_notion_scripts.sh        (1.6K) Setup helper
+  ⚙️  copy_to_clawd.sh               (1.5K) Copy ke target directory
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  🎯 CONFIGURED DATABASE IDs                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+DEV TICKETS:
+  Database 1: 482be0a206b044d99fff5798db2381e4
+  Database 2: 32e29af7d7dd4df69310270de8830d1a
+
+BUG TICKETS:
+  Set via: export BUG_DATABASE_ID="your_id"
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  🚀 QUICK START                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+STEP 1: Copy files ke target directory
+────────────────────────────────────────
+  $ cd /Users/ahmadfaris/work/chronicle/ai_project/reviewticket/
+        GIT_reviewTicket_V2/reviewTicket_web/reviewTicket/scripts
+  
+  $ ./copy_to_clawd.sh
+  
+  $ cd /Users/ahmadfaris/moltbot-workspace/scripts
+
+STEP 2: Set environment variable
+────────────────────────────────────────
+  $ export NOTION_TOKEN="secret_your_token_here"
+  
+  Get token: https://www.notion.so/my-integrations
+
+STEP 3: Test connection
+────────────────────────────────────────
+  $ python3 test_notion_connection.py
+  
+  Output harus:
+    ✅ API connection successful!
+    ✅ Dev Database 1: accessible
+    ✅ Dev Database 2: accessible
+
+STEP 4: Start using!
+────────────────────────────────────────
+  # List all databases
+  $ python3 list_all_pages.py --show-databases
+  
+  # Query dev tickets
+  $ python3 list_dev_tickets.py
+  
+  # Get tickets untuk AI review
+  $ python3 clawbot_ticket_reader.py \
+      --database-id 482be0a206b044d99fff5798db2381e4 \
+      --status "Ready for Review" \
+      --output review_queue.json
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  💡 USE CASES untuk CLAWBOT/MOLTBOT                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+1. AUTO TICKET REVIEW
+   ───────────────────
+   Get tickets → AI analyze → Generate report
+   
+   $ python3 clawbot_ticket_reader.py \
+       --database-id 482be0a206b044d99fff5798db2381e4 \
+       --status "Ready for Review" \
+       --output review_batch.json
+
+2. DAILY STANDUP
+   ───────────────
+   Get in-progress tickets → AI summarize
+   
+   $ python3 list_dev_tickets.py \
+       --status "In Progress" \
+       --output daily_work.json
+
+3. BUG MONITORING
+   ───────────────
+   Get critical bugs → AI alert
+   
+   $ python3 list_bug_tickets.py \
+       --status "Open" \
+       --priority "Critical" \
+       --output critical_bugs.json
+
+4. SINGLE TICKET ANALYSIS
+   ───────────────────────
+   Read full ticket content → AI review
+   
+   $ python3 clawbot_ticket_reader.py \
+       --ticket-id abc123def456 \
+       --show-context
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  📚 DOCUMENTATION                                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Start here:
+  👉 README_NOTION_SCRIPTS.md     Quick start, examples, use cases
+
+Deep dive:
+  👉 NOTION_DATABASE_GUIDE.md     API reference, filters, advanced usage
+
+Status:
+  👉 SUMMARY.md                   Complete checklist, status
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  🔧 FEATURES                                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+QUERY & FILTER:
+  ✅ Database query dengan pagination
+  ✅ Multiple filter types (status, priority, tags, search)
+  ✅ Combine filters (AND/OR logic)
+  ✅ Sort results
+  ✅ Limit results
+
+DATA EXTRACTION:
+  ✅ Extract all Notion property types
+  ✅ Convert blocks to Markdown
+  ✅ Support nested/children blocks
+  ✅ Rich text formatting preserved
+  ✅ Images, code blocks, lists, etc.
+
+AI INTEGRATION:
+  ✅ Full content extraction (properties + blocks)
+  ✅ Formatted context strings untuk AI
+  ✅ Batch processing support
+  ✅ JSON/Markdown export
+  ✅ Single ticket or database mode
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  🎯 SCRIPT USAGE REFERENCE                                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+test_notion_connection.py
+─────────────────────────
+  Test setup dan database access
+  
+  $ python3 test_notion_connection.py
+
+list_all_pages.py
+─────────────────
+  List/search all accessible pages & databases
+  
+  $ python3 list_all_pages.py
+  $ python3 list_all_pages.py --show-databases
+  $ python3 list_all_pages.py --search "dev"
+  $ python3 list_all_pages.py --output all.json
+
+notion_database_reader.py
+─────────────────────────
+  Generic database query tool (most flexible)
+  
+  $ python3 notion_database_reader.py --database-id <ID>
+  $ python3 notion_database_reader.py --database-id <ID> --show-schema
+  $ python3 notion_database_reader.py --database-id <ID> --status "Done"
+  $ python3 notion_database_reader.py --database-id <ID> --search "bug"
+
+list_dev_tickets.py
+───────────────────
+  Query dev tickets dari 2 pre-configured databases
+  
+  $ python3 list_dev_tickets.py
+  $ python3 list_dev_tickets.py --status "In Progress"
+  $ python3 list_dev_tickets.py --output dev_tickets.json
+
+list_bug_tickets.py
+───────────────────
+  Query bug tickets dengan priority filter
+  
+  $ python3 list_bug_tickets.py
+  $ python3 list_bug_tickets.py --status "Open" --priority "High"
+  $ python3 list_bug_tickets.py --output bugs.json
+
+clawbot_ticket_reader.py
+────────────────────────
+  AI agent integration - full content extraction
+  
+  # Single ticket
+  $ python3 clawbot_ticket_reader.py --ticket-id <ID> --show-context
+  
+  # Database query
+  $ python3 clawbot_ticket_reader.py \
+      --database-id <ID> \
+      --status "Ready for Review" \
+      --output tickets.json
+  
+  # Markdown format untuk AI
+  $ python3 clawbot_ticket_reader.py \
+      --database-id <ID> \
+      --output tickets.md \
+      --format markdown
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  ⚠️  TROUBLESHOOTING                                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ERROR: "NOTION_TOKEN not set"
+────────────────────────────────────────
+  $ export NOTION_TOKEN="your_token_here"
+
+ERROR: "object not found" 
+────────────────────────────────────────
+  Database belum di-share dengan integration
+  
+  1. Open database di Notion
+  2. Click "..." menu
+  3. Add connection → Select your integration
+
+ERROR: "unauthorized"
+────────────────────────────────────────
+  Token invalid atau expired
+  
+  Generate new: https://www.notion.so/my-integrations
+
+NO RESULTS
+────────────────────────────────────────
+  - Check filter conditions
+  - Try without filters
+  - Verify database has data
+  - Check database is shared
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  📞 RESOURCES                                                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Notion API:       https://developers.notion.com/
+Integration Setup: https://developers.notion.com/docs/getting-started
+Database Query:   https://developers.notion.com/reference/post-database-query
+My Integrations:  https://www.notion.so/my-integrations
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  ✅ STATUS                                                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  ✅ All scripts created and tested
+  ✅ Documentation complete
+  ✅ Database IDs pre-configured
+  ✅ Ready for deployment
+  ✅ Ready for AI agent integration
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  🎉 READY TO USE!                                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Next steps:
+  1. Run: ./copy_to_clawd.sh
+  2. Set: export NOTION_TOKEN="..."
+  3. Test: python3 test_notion_connection.py
+  4. Use: python3 list_dev_tickets.py
+  5. Integrate dengan clawbot persona!
+
+Happy automating! 🚀
+
+───────────────────────────────────────────────────────────────────────────────
+Created: January 28, 2026
+For: Clawbot/Moltbot AI Agent
+By: Ahmad Faris
+Version: 1.0.0
+───────────────────────────────────────────────────────────────────────────────

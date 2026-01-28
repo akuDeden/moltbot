@@ -1,0 +1,30 @@
+# Credentials - JANGAN COMMIT!
+google-credentials.json
+notion-credentials.json
+
+# Logs
+*.log
+sync-*.log
+cron-sync.log
+
+# Data
+data.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Memory files (optional - bisa di-commit kalau mau)
+# memory/*.md
