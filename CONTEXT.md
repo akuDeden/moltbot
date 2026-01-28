@@ -123,68 +123,11 @@ Bot: [detects "review tiket" → loads persona/QA.md → executes script]
 
 ---
 
-## 📊 NOTION DATABASE MAPPING (CRITICAL!)
-
-**IMPORTANT:** Always use the correct database based on request type:
-
-### Development Tasks Database
-- **ID:** `32e29af7d7dd4df69310270de8830d1a`
-- **Data Source ID:** Check via Notion API search
-- **Use for:** Development tickets, Sprint tasks, Features, Improvements
-
-### Bug Database
-- **ID:** `482be0a206b044d99fff5798db2381e4`
-- **Data Source ID:** Check via Notion API search  
-- **Use for:** Bugs, Issues, Errors, QA findings
-
-### How to Query Notion
-
-**Use the modular `notion_reader/` scripts** - lebih terstruktur dan reusable!
-
-**📦 Available Scripts:**
-
-1. **List Dev Tickets:** `scripts/notion_reader/list_dev_tickets.py`
-   - Automatically queries dev database (32e29af7d7dd4df69310270de8830d1a)
-   - Supports filtering by status
-   - Example: `python3 scripts/notion_reader/list_dev_tickets.py --status "In Progress"`
-
-2. **List Bug Tickets:** `scripts/notion_reader/list_bug_tickets.py` 
-   - Automatically queries bug database (482be0a206b044d99fff5798db2381e4)
-   - Supports filtering by status and priority
-   - Example: `python3 scripts/notion_reader/list_bug_tickets.py --priority "High"`
-
-3. **Search All Pages:** `scripts/notion_reader/list_all_pages.py`
-   - Generic search across workspace
-   - Example: `python3 scripts/notion_reader/list_all_pages.py --search "Sprint 2"`
-
-4. **Clawbot Integration:** `scripts/notion_reader/clawbot_ticket_reader.py`
-   - Read full ticket with content
-   - Prepare context for AI agent
-   - Example: `python3 scripts/notion_reader/clawbot_ticket_reader.py --ticket-id <page_id>`
-
-**Environment Setup:**
-```bash
-export NOTION_TOKEN=$(cat /Users/ahmadfaris/moltbot-workspace/notion-credentials.json | jq -r .notion_token)
-```
-
-### Request Type → Action Pattern
-
-| User Request | Script to Use |
-|--------------|---------------|
-| "sprint N tickets", "list dev" | `list_dev_tickets.py` atau `list_all_pages.py --search "Sprint N"` |
-| "bug sprint N", "list bugs" | `list_bug_tickets.py` atau `list_all_pages.py --search "Sprint N Bug"` |
-| "cari tiket [keyword]" | `list_all_pages.py --search "[keyword]"` |
-| "read tiket [ID]" | `clawbot_ticket_reader.py --ticket-id [ID]` |
-
-**⚠️ DO NOT query feedback or other databases unless explicitly requested!**
-
----
-
 ## ⚠️ IMPORTANT NOTES
 
 - **Critical commands** (marked with 🔴) MUST execute scripts - jangan skip!
 - **Persona files** contain detailed instructions - BACA file sebelum execute
 - **Mode persists** across messages until explicitly changed
 - **Keywords are case-insensitive** untuk flexible detection
-- **Notion scripts** MUST use correct database - development vs bug (see mapping above)
+- When detecting work/QA keywords → Load `persona/QA.md` for detailed execution instructions
 
