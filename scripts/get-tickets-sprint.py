@@ -7,8 +7,12 @@ Example: python3 get-tickets-sprint.py 2
 import sys
 import json
 import httpx
+import os
 
-CREDENTIALS_FILE = "/Users/ahmadfaris/moltbot-workspace/notion-credentials.json"
+CREDENTIALS_FILE = os.environ.get(
+    'NOTION_CREDENTIALS_FILE',
+    os.path.expanduser('~/moltbot-workspace/notion-credentials.json')
+)
 
 def load_credentials():
     with open(CREDENTIALS_FILE, 'r') as f:
