@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""
+Get sprint info from Notion
+Usage: python3 get-sprint.py [sprint_number]
+Example: python3 get-sprint.py 2
+"""
+import sys
+import json
+
+try:
+    from notion_client import Client
+except ImportError:
+    print("❌ Error: notion-client not installed")
+    print("Install with: pip install notion-client")
+    sys.exit(1)
+
+CREDENTIALS_FILE = "/Users/ahmadfaris/moltbot-workspace/notion-credentials.json"
+
+def load_credentials():
+    try:
+        with open(CREDENTIALS_FILE, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"❌ Error: {CREDENTIALS_FILE} not found")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(f"❌ Error: {CREDENTIALS_FILE} is not valid JSON")
+        sys.exit(1)
+
+def get_sprints(notion, database_id):
+    """Get all sprints from Notion database"""
+    try:
+        # Use data_sources.query for newer notion-client versions (2.7.0+)
+        response = notion.data_sources.query(data_source_id=database_id)
+        
+        sprints = []
+        for page in response.get("results", []):
+            page_id = page["id"]
+            url = page["url"]
+            
+            # Get title - check all possible property names
+            title = "Untitled"
+            props = page.get("properties", {})
+            for key in props.keys():
+                prop_data = props[key]
+                if prop_data.get("type") == "title":
+                    title_list = prop_data.get("title", [])
+                    if title_list:
+                        title = title_list[0].get("plain_text", "Untitled")
+                    break
+            
+            sprints.append({
+                "title": title,
+                "url": url,
+                "id": page_id
+            })
+        
+        return sprints
+    except Exception as e:
+        print(f"❌ Error querying database: {str(e)}")
+        sys.exit(1)
+
+def main():
+    # Load credentials
+    creds = load_credentials()
+    notion_token = creds.get("notion_token")
+    sprint_db_id = creds.get("sprint_database_id")
+    
+    if not notion_token:
+        print("❌ Error: notion_token not found in credentials")
+        sys.exit(1)
+    
+    if not sprint_db_id:
+        print("❌ Error: sprint_database_id not found in credentials")
+        sys.exit(1)
+    
+    # Initialize Notion client
+    notion = Client(auth=notion_token)
+    
+    # Get all sprints
+    sprints = get_sprints(notion, sprint_db_id)
+    
+    if not sprints:
+        print("❌ No sprints found")
+        sys.exit(1)
+    
+    # If sprint number provided, filter
+    if len(sys.argv) > 1:
+        sprint_num = sys.argv[1]
+        matching = [s for s in sprints if sprint_num in s["title"].lower() or sprint_num in s["title"]]
+        
+        if matching:
+            sprint = matching[0]
+            print(f"✅ Sprint found: {sprint['title']}")
+            print(f"🔗 Link: {sprint['url']}")
+        else:
+            print(f"❌ Sprint {sprint_num} not found")
+            print("\n📋 Available sprints:")
+            for s in sprints:
+                print(f"  - {s['title']}")
+    else:
+        # Show all sprints
+        print("📋 Available sprints:")
+        for s in sprints:
+            print(f"  - {s['title']}: {s['url']}")
+
+if __name__ == "__main__":
+    main()

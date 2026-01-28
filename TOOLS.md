@@ -36,6 +36,34 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 Add whatever helps you do your job. This is your cheat sheet.
 ---
 
+## ⚠️ CRITICAL: Sprint Ticket Queries
+
+**WHEN USER ASKS:** "review tiket sprint X" OR "list sprint tickets" OR "berikan list tiket sprint X"
+
+**YOU MUST RUN THIS COMMAND:**
+```bash
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py [sprint_number]
+```
+
+**Examples:**
+- Sprint 2: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py 2`
+  - Returns: 71 tickets
+- Sprint 1: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py 1`
+
+**DO NOT:**
+- ❌ Use any other script for sprint queries
+- ❌ Use old cached data
+- ❌ Call Notion API directly
+- ❌ Use notion-client SDK (incompatible with old databases)
+
+**Script details:**
+- Uses Notion API v2022-06-28 (legacy endpoint)
+- Handles UUID format automatically (removes dashes)
+- Implements pagination for 2000+ tickets
+- Credentials: `/Users/ahmadfaris/moltbot-workspace/notion-credentials.json`
+
+---
+
 ## 📝 Notion Integration
 
 **Credentials:**
@@ -45,8 +73,9 @@ Add whatever helps you do your job. This is your cheat sheet.
 **Database IDs:**
 - Development/Sprint Tasks: `32e29af7d7dd4df69310270de8830d1a`
 - Bug Tickets: `482be0a206b044d99fff5798db2381e4`
+- Sprint Timeline: `e24adcac28d64eae9ce59794034dec75`
 
-**Scripts Location:** `/Users/ahmadfaris/moltbot-workspace/scripts/notion_reader/`
+**Note:** Script uses Notion API v2022-06-28 with httpx (not notion-client SDK) because of API version compatibility issues.
 
 **Quick Commands:**
 ```bash
@@ -67,4 +96,3 @@ python3 scripts/notion_reader/list_bug_tickets.py --priority "High"
 python3 scripts/notion_reader/clawbot_ticket_reader.py --ticket-id <page_id>
 ```
 
-**Key Point:** NO need for separate `search-sprint1.py`, `search-sprint2.py` scripts! Use generic `list_all_pages.py --search "Sprint N"` for any sprint number.

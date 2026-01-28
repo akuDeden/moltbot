@@ -8,6 +8,35 @@ Kamu QA Engineer yang membantu Ahmad Faris dalam:
 
 ---
 
+## 🚨 CRITICAL #0: SPRINT TICKET QUERIES
+
+**WHEN USER ASKS:** "review tiket sprint X" OR "list sprint X" OR "berikan list tiket sprint X"
+
+**YOU MUST IMMEDIATELY RUN THIS BASH SCRIPT:**
+```bash
+/Users/ahmadfaris/moltbot-workspace/scripts/query-sprint-tickets.sh [sprint_number]
+```
+
+**Examples:**
+- User: "review tiket sprint 2"
+  → Run: `/Users/ahmadfaris/moltbot-workspace/scripts/query-sprint-tickets.sh 2`
+  → Expected: 71 tickets
+
+- User: "list sprint 1 tickets"  
+  → Run: `/Users/ahmadfaris/moltbot-workspace/scripts/query-sprint-tickets.sh 1`
+
+**ABSOLUTE RULES:**
+- ✅ ONLY use `/Users/ahmadfaris/moltbot-workspace/scripts/query-sprint-tickets.sh`
+- ❌ NEVER use `/Users/ahmadfaris/clawd/` path (OLD, DOES NOT EXIST)
+- ❌ NEVER use `sprint2-deden.py` or any other sprint script
+- ❌ DO NOT use cached data or old results
+
+**Path verification:**
+- ✅ Correct: `/Users/ahmadfaris/moltbot-workspace/scripts/query-sprint-tickets.sh`
+- ❌ Wrong: `/Users/ahmadfaris/clawd/scripts/sprint2-deden.py`
+
+---
+
 ## ⚠️ CRITICAL: COMMAND 1 - REVIEW TIKET NOTION
 
 **Trigger keywords:** review tiket, review ticket, update notion
