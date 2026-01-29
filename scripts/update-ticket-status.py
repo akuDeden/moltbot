@@ -21,14 +21,52 @@ except ImportError:
 
 CREDENTIALS_FILE = "/Users/ahmadfaris/moltbot-workspace/notion-credentials.json"
 
+def get_sprint_id(token, sprint_database_id, sprint_name):
+    """Get Sprint UUID from Sprint name"""
+    try:
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json'
+        }
+        
+        url = f'https://api.notion.com/v1/databases/{sprint_database_id}/query'
+        response = httpx.post(url, headers=headers, json={}, timeout=30.0)
+        
+        if response.status_code != 200:
+            return None
+        
+        data = response.json()
+        sprints = data.get('results', [])
+        
+        # Search for matching sprint name
+        for sprint_page in sprints:
+            # Extract sprint title
+            for key, prop in sprint_page['properties'].items():
+                if prop.get('type') == 'title':
+                    tlist = prop.get('title', [])
+                    if tlist:
+                        title = tlist[0].get('plain_text', '')
+                        # Match sprint name (case-insensitive, partial match)
+                        if sprint_name.lower() in title.lower():
+                            sprint_id = sprint_page['id'].replace('-', '')
+                            return sprint_id
+        
+        return None
+        
+    except Exception as e:
+        return None
+
 def load_credentials():
     notion_token = os.getenv('NOTION_TOKEN')
     database_dev = os.getenv('DATABASE_DEV')
+    sprint_database_id = os.getenv('SPRINT_DATABASE_ID')
     
-    if notion_token and database_dev:
+    if notion_token and database_dev and sprint_database_id:
         return {
             'notion_token': notion_token,
-            'database_dev': database_dev
+            'database_dev': database_dev,
+            'sprint_database_id': sprint_database_id
         }
     
     try:
@@ -36,10 +74,10 @@ def load_credentials():
             return json.load(f)
     except FileNotFoundError:
         print(f"❌ Error: Credentials not found")
-        print("Set NOTION_TOKEN & DATABASE_DEV in .env")
+        print("Set NOTION_TOKEN, DATABASE_DEV & SPRINT_DATABASE_ID in .env")
         sys.exit(1)
 
-def search_ticket(token, database_id, title, sprint=None):
+def search_ticket(token, database_id, sprint_database_id, title, sprint=None):
     """Search for ticket by title and optional sprint"""
     try:
         # Query database via HTTP (no filter initially, search client-side)
@@ -54,10 +92,16 @@ def search_ticket(token, database_id, title, sprint=None):
         
         # Add sprint filter if specified
         if sprint:
+            # Get Sprint UUID first
+            sprint_uuid = get_sprint_id(token, sprint_database_id, sprint)
+            if not sprint_uuid:
+                print(f"⚠️  Sprint '{sprint}' tidak ditemukan")
+                return None
+            
             body['filter'] = {
                 "property": "Sprint",
-                "select": {
-                    "equals": sprint
+                "relation": {
+                    "contains": sprint_uuid
                 }
             }
         
@@ -196,13 +240,14 @@ Examples:
     creds = load_credentials()
     token = creds['notion_token']
     database_id = creds['database_dev']
+    sprint_database_id = creds.get('sprint_database_id')
     
     print(f"🔍 Searching for ticket: '{title}'")
     if sprint:
         print(f"   in sprint: '{sprint}'")
     
     # Search for ticket
-    ticket = search_ticket(token, database_id, title, sprint)
+    ticket = search_ticket(token, database_id, sprint_database_id, title, sprint)
     
     if not ticket:
         sys.exit(1)

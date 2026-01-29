@@ -23,11 +23,13 @@
 When in AUTO mode, bot detects persona from keywords and **loads the corresponding file**:
 
 ### Assistant Keywords
-**Triggers:** `simpan belanja`, `catat belanja`, `tambah belanja`, `total belanja`, `ia simpan`
+**Triggers:** `simpan belanja`, `catat belanja`, `tambah belanja`, `total belanja`, `ia simpan`, `cari di google` (simple search only), `screenshot` (simple), `buka [URL]` (navigation only)
 
 **→ Load:** `persona/ASSISTANT.md`
 
-**Persona:** Shopping tracker & expense management
+**Persona:** Shopping tracker, expense management & simple browsing
+
+**Note:** For complex browser testing (login, forms, verification), auto-switch to QA persona
 
 ---
 
@@ -41,7 +43,7 @@ When in AUTO mode, bot detects persona from keywords and **loads the correspondi
 ---
 
 ### QA Keywords
-**Triggers:** `review tiket`, `test case`, `bug report`, `UAT`, `QA review`, `testing`, `tiket bug terakhir`, `list bug`, `ada bug`, `catat bug`, `user g bisa`, `test login`, `test browser`, `buka browser`, `test staging`, `cek browser`
+**Triggers:** `review tiket`, `test case`, `bug report`, `UAT`, `QA review`, `testing`, `tiket bug terakhir`, `list bug`, `ada bug`, `catat bug`, `user g bisa`, `test login`, `test browser`, `buka browser`, `buka google`, `cari di google`, `screenshot`, `test staging`, `cek browser`, `cari tiket`, `search tiket`, `carikan tiket`, `ada tiket apa`, `update tiket`, `update status`, `change status`, `ubah status`
 
 **→ Load:** `persona/QA.md`
 
