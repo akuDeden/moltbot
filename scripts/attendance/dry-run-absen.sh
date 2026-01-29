@@ -1,10 +1,18 @@
 #!/bin/bash
 # Dry Run Test - Show what would be executed without actually running
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Load credentials from .env
+if [ -f "$WORKSPACE_ROOT/.env" ]; then
+    export $(grep -v '^#' "$WORKSPACE_ROOT/.env" | grep -E '^(HR_URL|HR_EMAIL|HR_PASSWORD)=' | xargs)
+fi
+
 ACTION=${1:-in}
-HR_URL="https://hr.chronicle.rip"
-EMAIL="faris@chronicle.rip"
-PASSWORD="AbuTel09!"
+HR_URL="${HR_URL}"
+EMAIL="${HR_EMAIL}"
+PASSWORD="${HR_PASSWORD}"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🧪 DRY RUN: Attendance Automation Test"

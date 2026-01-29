@@ -4,10 +4,18 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Load credentials from .env
+if [ -f "$WORKSPACE_ROOT/.env" ]; then
+    export $(grep -v '^#' "$WORKSPACE_ROOT/.env" | grep -E '^(HR_URL|HR_EMAIL|HR_PASSWORD)=' | xargs)
+fi
+
 ACTION=${1:-in}
-HR_URL="https://hr.chronicle.rip"
-EMAIL="faris@chronicle.rip"
-PASSWORD="AbuTel09!"
+HR_URL="${HR_URL}"
+EMAIL="${HR_EMAIL}"
+PASSWORD="${HR_PASSWORD}"
 
 # Random delay for clock in (08:30-09:00) = 30 minutes window
 # Random delay for clock out (17:00-18:00) = 60 minutes window
