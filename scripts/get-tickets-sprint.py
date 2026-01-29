@@ -9,15 +9,43 @@ import json
 import httpx
 import os
 from collections import defaultdict
+from pathlib import Path
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# Fallback to JSON file if .env not found
 CREDENTIALS_FILE = os.environ.get(
     'NOTION_CREDENTIALS_FILE',
     os.path.expanduser('~/moltbot-workspace/notion-credentials.json')
 )
 
 def load_credentials():
-    with open(CREDENTIALS_FILE, 'r') as f:
-        return json.load(f)
+    """Load credentials from environment variables or JSON file"""
+    # Try .env first
+    notion_token = os.getenv('NOTION_TOKEN')
+    database_dev = os.getenv('DATABASE_DEV')
+    sprint_database_id = os.getenv('SPRINT_DATABASE_ID')
+    
+    if notion_token and database_dev and sprint_database_id:
+        return {
+            'notion_token': notion_token,
+            'database_dev': database_dev,
+            'sprint_database_id': sprint_database_id
+        }
+    
+    # Fallback to JSON file
+    if os.path.exists(CREDENTIALS_FILE):
+        with open(CREDENTIALS_FILE, 'r') as f:
+            return json.load(f)
+    
+    raise Exception(
+        "Credentials not found! Either:\n"
+        "1. Create .env file with NOTION_TOKEN, DATABASE_DEV, SPRINT_DATABASE_ID\n"
+        f"2. Or create {CREDENTIALS_FILE} with JSON credentials"
+    )
 
 def query_database_with_filter(token, db_id, filter_obj=None, api_version='2022-06-28'):
     """Query Notion database with filter using raw HTTP with pagination"""

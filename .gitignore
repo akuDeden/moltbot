@@ -1,6 +1,7 @@
 # Credentials - JANGAN COMMIT!
 google-credentials.json
 notion-credentials.json
+.env
 
 # Logs
 *.log
