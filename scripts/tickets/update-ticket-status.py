@@ -14,7 +14,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-    env_path = Path(__file__).parent.parent / '.env'
+    env_path = Path(__file__).resolve().parent.parent.parent / '.env'
     load_dotenv(dotenv_path=env_path)
 except ImportError:
     pass
@@ -178,6 +178,8 @@ def update_ticket_status(token, page_id, new_status):
         }
         
         url = f'https://api.notion.com/v1/pages/{page_id}'
+        # CRITICAL: Update 'Status' (notion://tasks/status_property) NOT 'Domain' (select field)
+        # Status is the main workflow status property in Notion databases
         body = {
             "properties": {
                 "Status": {

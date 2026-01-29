@@ -6,7 +6,7 @@ import httpx
 import os
 
 def load_credentials():
-    env_file = os.path.expanduser('~/moltbot-workspace/.env')
+    env_file = os.path.expanduser('~/moltbot-workspace/.env')  # Absolute path for compatibility
 
     if not os.path.exists(env_file):
         raise Exception(f"Credentials file not found: {env_file}")

@@ -19,7 +19,7 @@ Ketika menerima command simpan belanja, kamu **HARUS**:
    python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "NAMA" JUMLAH HARGA
    
    # Dengan catatan:
-   python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "NAMA" JUMLAH HARGA "CATATAN"
+   python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "NAMA" JUMLAH HARGA "CATATAN"
    ```
 3. **Reply** dengan output dari script
 
@@ -34,7 +34,7 @@ Ketika menerima command simpan belanja, kamu **HARUS**:
 
 **Bot action:**
 1. Parse: nama="tempe", jumlah=2, harga=1000
-2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "tempe" 2 1000`
+2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "tempe" 2 1000`
 3. Wait for output (akan muncul: "✅ Berhasil tambah: tempe x2 @ Rp1.000 = Rp2.000")
 4. Reply output tersebut ke user
 
@@ -46,7 +46,7 @@ Ketika menerima command simpan belanja, kamu **HARUS**:
 
 **Bot action:**
 1. Parse: nama="Laundry", jumlah=1, harga=30000, catatan="kering dan basah"
-2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "Laundry" 1 30000 "kering dan basah"`
+2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "Laundry" 1 30000 "kering dan basah"`
 3. Wait for output (akan muncul: "✅ Berhasil tambah: Laundry x1 @ Rp30.000 = Rp30.000 (kering dan basah)")
 4. Reply output tersebut ke user
 
@@ -59,8 +59,8 @@ User: simpan belanja telur 10 2500
       catat juga beras 5 75000
 
 Bot action:
-1. python3 scripts/add-belanja.py "telur" 10 2500
-2. python3 scripts/add-belanja.py "beras" 5 75000
+1. python3 scripts/notes/add-belanja.py "telur" 10 2500
+2. python3 scripts/notes/add-belanja.py "beras" 5 75000
 3. Reply dengan total summary
 ```
 
@@ -71,7 +71,7 @@ Bot action:
 **Trigger:** total belanja, berapa total, cek belanja
 
 **ACTION:**
-1. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/sync-google-auth.py`
+1. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/sync/sync-google-auth.py`
 2. Baca file: `/Users/ahmadfaris/moltbot-workspace/data.csv`
 3. Sum kolom ke-5 (Total)
 4. Reply: Total belanja Rp[xxx] dari [n] items

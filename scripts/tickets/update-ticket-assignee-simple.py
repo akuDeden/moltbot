@@ -10,7 +10,7 @@ import os
 
 def load_credentials():
     """Load credentials from .env file"""
-    env_file = os.path.expanduser('~/moltbot-workspace/.env')
+    env_file = os.path.expanduser('~/moltbot-workspace/.env')  # Absolute path for compatibility
 
     if not os.path.exists(env_file):
         raise Exception(f"Credentials file not found: {env_file}")
@@ -84,20 +84,22 @@ def search_ticket_by_title(token, db_id, search_title):
     return results[0]
 
 def find_assignee_property(props):
-    """Find the assignee property name"""
-    assignee_keys = ['Assignee', 'assignee', 'Owner', 'owner', 'Assigned to', 'assigned_to']
-
+    """Find the assignee property name - MUST be 'Assignee' not 'Tester'"""
+    # CRITICAL: Target the actual 'Assignee' property (notion://tasks/assign_property)
+    # NOT 'Tester' which is a different people field!
+    
+    # Try exact match first (Notion database uses 'Assignee' for the main assignee field)
+    if 'Assignee' in props and props['Assignee'].get('type') == 'people':
+        return 'Assignee'
+    
+    # Fallback to case variations
+    assignee_keys = ['assignee', 'Owner', 'owner', 'Assigned to', 'assigned_to']
     for key in assignee_keys:
-        if key in props:
-            prop = props[key]
-            if prop.get('type') == 'people':
-                return key
-
-    # Look for any people type property
-    for key, prop in props.items():
-        if prop.get('type') == 'people':
+        if key in props and props[key].get('type') == 'people':
             return key
-
+    
+    # DO NOT fallback to any people property - this causes Tester to be used instead!
+    # If Assignee not found, return None and fail explicitly
     return None
 
 def update_assignee(token, ticket_id, assignee_property, assignee_user_id=None):

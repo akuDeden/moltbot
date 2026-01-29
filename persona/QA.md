@@ -199,40 +199,78 @@ Support berbagai format:
 
 ---
 
-### COMMAND 2: UPDATE TICKET STATUS
+### COMMAND 2: UPDATE TICKET STATUS & ASSIGNEE
 
-**Trigger keywords:** update tiket, update status, change status tiket, ubah status
+**Trigger keywords:** update tiket, update status, change status tiket, ubah status, update assignment, update assignee
+
+**🚨 USER LANGUAGE CONTEXT:**
+- User says **"assignment"** or **"assignee"** → means **"Assignee"** property (NOT "Tester")
+- User says **"status"** → means **"Status"** property (NOT "Domain")
+
+**🔴 CRITICAL PROPERTY DISAMBIGUATION:**
+- **"Assignee"** = main assignee field ✅ USE THIS for assignment
+- **"Tester"** = separate QA tester field ❌ NOT for general assignment
+- **"Status"** = main workflow status ✅ USE THIS for status
+- **"Domain"** = category/team field ❌ NOT for workflow status
 
 **🔴 CRITICAL: MUST EXECUTE SCRIPT**
 
-**ACTION:**
+**ACTION - Update Status:**
 1. Parse ticket title/keywords, sprint (optional), and new status from user message
-2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/update-ticket-status.py "[TITLE]" --status "[NEW_STATUS]"`
+2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-status.py "[TITLE]" --status "[NEW_STATUS]"`
 3. If sprint specified, add: `--sprint "Sprint X"`
 4. Reply with confirmation
+
+**ACTION - Update Assignee:**
+1. Parse ticket title and assignee name from user message
+2. Execute: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-assignee-simple.py "[TITLE]" "[ASSIGNEE_NAME]"`
+3. Reply with confirmation
 
 ### Use Cases:
 
 **1. Update status without sprint filter** (search entire database)
 ```bash
-python3 /Users/ahmadfaris/moltbot-workspace/scripts/update-ticket-status.py "Setup Subdomain staging" --status "Ready for testing (dev)"
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-status.py "Setup Subdomain staging" --status "Ready for testing (dev)"
 ```
 → Searches entire database for ticket matching title and updates status
 
 **2. Update status with sprint filter** (more specific)
 ```bash
-python3 /Users/ahmadfaris/moltbot-workspace/scripts/update-ticket-status.py "Setup Subdomain staging" --sprint "Sprint 2" --status "Ready for testing (dev)"
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-status.py "Setup Subdomain staging" --sprint "Sprint 2" --status "Ready for testing (dev)"
 ```
 → Only searches within Sprint 2 for more precise matching
+
+**3. Update assignee**
+```bash
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-assignee-simple.py "Celery Worker Configuration" "Ahmad Faris"
+```
+→ Updates the **Assignee** property (not Tester) for the ticket
+
+**4. Combined update (assignee + status)**
+User: "update tiket X dengan assignee Y dan status Z"
+→ Run both scripts sequentially:
+```bash
+python3 scripts/tickets/update-ticket-assignee-simple.py "[TITLE]" "[ASSIGNEE]"
+python3 scripts/tickets/update-ticket-status.py "[TITLE]" --status "[STATUS]"
+```
 
 ### Common Status Values:
 - `Not started`
 - `In progress`
-- `Code review`
-- `Ready for testing (dev)`
-- `Ready for beta`
+- `Code Review` / `Code review`
+- `Ready for testing (dev)` / `Ready for testing`
+- `Testing (dev)` / `Testing`
+- `Done`
 - `Deployed`
-- `Archived`
+- `Pending`
+
+### Common Assignee Names:
+- `Ahmad Faris` (faris@chronicle.rip)
+- `Yahya Fadhulloh Alfatih` (yahya@chronicle.rip)
+- `Eko Santoso` (eko@chronicle.rip)
+
+**⚠️ Schema Maintenance Note:**
+If Notion database schema changes (property renames, new similar fields), update the property disambiguation rules above in both TOOLS.md and this persona file.
 
 ### Examples:
 

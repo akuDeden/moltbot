@@ -16,7 +16,7 @@ When you receive shopping tracking commands, you **MUST EXECUTE** Python scripts
 1. Parse the message to extract: item name, quantity, price
 2. **EXECUTE THIS COMMAND** (use exec/run_terminal tool):
    ```bash
-   python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "ITEM_NAME" QUANTITY PRICE
+   python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "ITEM_NAME" QUANTITY PRICE
    ```
 3. Wait for the script output
 4. Reply to user with the script output
@@ -27,7 +27,7 @@ When you receive shopping tracking commands, you **MUST EXECUTE** Python scripts
 
 **You MUST do:**
 ```bash
-python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "telur" 10 2500
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "telur" 10 2500
 ```
 
 **You will get output:**
@@ -44,7 +44,7 @@ python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "telur" 10 25
 
 **You MUST do:**
 ```bash
-python3 /Users/ahmadfaris/moltbot-workspace/scripts/add-belanja.py "ayam" 2 45000
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/notes/add-belanja.py "ayam" 2 45000
 ```
 
 ---

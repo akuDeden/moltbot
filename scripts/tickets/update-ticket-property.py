@@ -30,7 +30,7 @@ except ImportError:
 
 try:
     from dotenv import load_dotenv
-    env_path = Path(__file__).parent.parent / '.env'
+    env_path = Path(__file__).resolve().parent.parent.parent / '.env'
     load_dotenv(dotenv_path=env_path)
 except ImportError:
     pass  # dotenv optional
@@ -156,8 +156,10 @@ def update_page_properties(notion, page_id, updates):
                 prop_name = key
             
             # Build property value based on type
-            if key == 'assigned':
-                # People/User property
+            if key == 'assigned' or key == 'assignee':
+                # People/User property - MUST use 'Assignee' not 'Tester'
+                # Force property name to be 'Assignee' (the main assignee field)
+                prop_name = 'Assignee'
                 if isinstance(value, list):
                     properties[prop_name] = {
                         "people": [{"id": uid} for uid in value]

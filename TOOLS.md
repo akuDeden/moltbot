@@ -42,13 +42,75 @@ Add whatever helps you do your job. This is your cheat sheet.
 
 **YOU MUST RUN THIS COMMAND:**
 ```bash
-python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py [sprint_number]
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/get-tickets-sprint.py [sprint_number]
 ```
 
 **Examples:**
-- Sprint 2: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py 2`
-  - Returns: 71 tickets
-- Sprint 1: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/get-tickets-sprint.py 1`
+- Sprint 2: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/get-tickets-sprint.py 2`
+  - Returns: 75 tickets grouped by status
+- Sprint 1: `python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/get-tickets-sprint.py 1`
+
+**Filtering by Status:**
+User may ask: "berikan list tiket sprint 2 yang status nya code review"
+- Run the full command above
+- Output is already grouped by status (CODE REVIEW, IN PROGRESS, NOT STARTED, etc.)
+- Extract and show only the requested status section from output
+- Example statuses: "Code review", "In progress", "Not started", "Ready for testing", "Deployed", "Ready for beta"
+
+---
+
+### 🔄 Update Ticket Properties
+
+**WHEN USER ASKS:** "update tiket X dengan assignee Y dan status Z"
+
+**USER LANGUAGE CONTEXT:**
+- User says **"assignment"** or **"assignee"** → means **"Assignee"** property (NOT "Tester")
+- User says **"status"** → means **"Status"** property (NOT "Domain")
+
+**CRITICAL - Property Name Disambiguation:**
+- **"Assignee"** = main assignee field (notion://tasks/assign_property) ✅ USE THIS
+  - This is what user means by "assignment" or "assignee"
+- **"Tester"** = separate QA tester field ❌ DO NOT use for general assignment
+- **"Status"** = main workflow status (notion://tasks/status_property) ✅ USE THIS
+  - This is what user means by "status"
+- **"Domain"** = category/team field (select type) ❌ DO NOT use for workflow status
+
+**Update Assignee:**
+```bash
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-assignee-simple.py "<ticket_title>" "<assignee_name>"
+```
+Example: `python3 .../update-ticket-assignee-simple.py "Celery Worker Configuration" "Ahmad Faris"`
+
+**Update Status:**
+```bash
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/update-ticket-status.py "<ticket_title>" --status "<status_name>"
+```
+Example: `python3 .../update-ticket-status.py "Celery Worker Configuration" --status "In Progress"`
+
+**Valid Status Values:**
+- "Not Started" / "Not started"
+- "In Progress" / "In progress"
+- "Code Review" / "Code review"
+- "Ready for testing (dev)" / "Ready for testing"
+- "Testing (dev)" / "Testing"
+- "Done"
+- "Pending"
+- "Deployed"
+
+**Common User Names:**
+- Ahmad Faris (faris@chronicle.rip)
+- Yahya Fadhulloh Alfatih (yahya@chronicle.rip)
+- Eko Santoso (eko@chronicle.rip)
+
+**Verification:**
+After update, verify with:
+```bash
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/verify-ticket.py <ticket_id>
+```
+
+---
+
+**Filtering by Status:**
 
 **DO NOT:**
 - ❌ Use any other script for sprint queries

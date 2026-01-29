@@ -1,105 +1,171 @@
-# 🛠️ Scripts - Belanja Tracker Utilities
+# 📁 Scripts Directory
 
-Folder ini berisi semua script utilities untuk sistem belanja tracker.
+Organized script collection for workspace automation.
 
-## 📜 Scripts:
+## 📂 Directory Structure
 
-### **add-belanja.py**
-Script utama untuk menambah item belanja ke Google Sheet.
-
-**Usage:**
-```bash
-python3 scripts/add-belanja.py "Nama Item" Jumlah Harga
 ```
-
-**Example:**
-```bash
-python3 scripts/add-belanja.py "Telur" 10 2500
-# Output: ✅ Berhasil tambah: Telur x10 @ Rp2.500 = Rp25.000
+scripts/
+├── attendance/     # Auto attendance system
+├── tickets/        # Ticket & project management
+├── sync/          # Memory & data synchronization
+├── notes/         # Notes & shopping list
+└── docs/          # Documentation & requirements
 ```
 
 ---
 
-### **auto-sync-memory-to-sheet.py**
-Auto-sync items dari memory file ke Google Sheet (skip duplicates).
+## 🎯 Quick Access
 
-**Usage:**
+### 📋 Attendance (Auto Absensi)
+**Location:** `attendance/`
+
+| Script | Purpose |
+|--------|---------|
+| `auto-absen.sh` | Main attendance script (clock in/out) |
+| `quick-status.sh` | Quick status check (for AI) |
+| `check-absen-status.sh` | Detailed status with duration |
+| `dry-run-absen.sh` | Test without executing |
+| `setup-absen-cron.sh` | Install cron jobs |
+
+**Quick Commands:**
 ```bash
-python3 scripts/auto-sync-memory-to-sheet.py [memory_file]
-```
+# Manual attendance
+./attendance/auto-absen.sh in
+./attendance/auto-absen.sh out
 
-**Example:**
-```bash
-python3 scripts/auto-sync-memory-to-sheet.py
-# Auto-detect today's memory file
-```
+# Check status
+./attendance/quick-status.sh
 
----
-
-### **sync-google-auth.py**
-Download data dari Google Sheet ke local CSV file.
-
-**Usage:**
-```bash
-python3 scripts/sync-google-auth.py
-```
-
-**Output:** `/Users/ahmadfaris/moltbot-workspace/data.csv`
-
----
-
-### **sync-sheets.sh**
-Download Google Sheet sebagai CSV via URL (public access needed).
-
-**Usage:**
-```bash
-bash scripts/sync-sheets.sh
+# Setup autopilot
+./attendance/setup-absen-cron.sh
 ```
 
 ---
 
-### **watch-and-sync.sh**
-Background watcher script yang auto-sync setiap 2 menit.
+### 🎫 Tickets
+**Location:** `tickets/`
 
-**Usage:**
+| Script | Purpose |
+|--------|---------|
+| `create-bug-ticket.py` | Create bug ticket |
+| `find-elasticsearch-ticket.py` | Search tickets |
+| `get-sprint-tickets-status.py` | Sprint status |
+| `get-tickets-sprint.py` | Get sprint tickets |
+| `query-sprint-tickets.sh` | Query sprint |
+| `query-tickets.py` | General ticket query |
+| `update-ticket-*.py` | Update ticket properties |
+
+**Quick Commands:**
 ```bash
-# Run manually (foreground)
-bash scripts/watch-and-sync.sh
+# Query tickets
+python tickets/query-tickets.py
 
-# Run as service (via launchd)
-launchctl load ~/Library/LaunchAgents/com.ahmadfaris.belanja-sync.plist
+# Create bug
+python tickets/create-bug-ticket.py
+
+# Update status
+python tickets/update-ticket-status.py
 ```
 
 ---
 
-## 🔄 Dependencies:
+### 🔄 Sync
+**Location:** `sync/`
 
+| Script | Purpose |
+|--------|---------|
+| `auto-sync-memory-to-sheet.py` | Sync memory to Google Sheets |
+| `cron-sync.sh` | Cron job for sync |
+| `instant-watch.sh` | Watch & sync instantly |
+| `sync-google-auth.py` | Google auth setup |
+| `sync-sheets.sh` | Manual sheet sync |
+| `watch-and-sync.sh` | Watch for changes |
+
+**Quick Commands:**
 ```bash
-pip install gspread oauth2client
-```
+# Setup Google auth
+python sync/sync-google-auth.py
 
-## 📁 Files Needed:
+# Manual sync
+./sync/sync-sheets.sh
 
-- `google-credentials.json` - Service account credentials (di root clawd/)
-- `memory/YYYY-MM-DD.md` - Memory file untuk auto-sync
-
-## 🚀 Quick Commands:
-
-```bash
-# Manual add item
-python3 scripts/add-belanja.py "Kopi" 1 15000
-
-# Manual sync from memory
-python3 scripts/auto-sync-memory-to-sheet.py
-
-# Download sheet data
-python3 scripts/sync-google-auth.py
-
-# Check auto-sync service
-launchctl list | grep belanja
-tail -f /Users/ahmadfaris/moltbot-workspace/sync-stdout.log
+# Watch mode
+./sync/watch-and-sync.sh
 ```
 
 ---
 
-**✅ All scripts ready to use!**
+### 📝 Notes
+**Location:** `notes/`
+
+| Script | Purpose |
+|--------|---------|
+| `add-belanja.py` | Add shopping item |
+| `add-note.py` | Add general note |
+
+**Quick Commands:**
+```bash
+# Add shopping item
+python notes/add-belanja.py "Beli susu"
+
+# Add note
+python notes/add-note.py "Meeting notes..."
+```
+
+---
+
+### 📚 Docs
+**Location:** `docs/`
+
+| File | Description |
+|------|-------------|
+| `README.md` | General scripts documentation |
+| `TEST-REPORT.md` | Attendance system test report |
+| `TRACKING-UPDATE.md` | Tracking feature documentation |
+| `requirements.txt` | Python dependencies |
+
+---
+
+## 🚀 Getting Started
+
+### Python Scripts
+```bash
+# Install dependencies
+pip install -r docs/requirements.txt
+
+# Or with venv
+python -m venv venv
+source venv/bin/activate
+pip install -r docs/requirements.txt
+```
+
+### Shell Scripts
+All shell scripts are already executable. Just run them directly:
+```bash
+./attendance/auto-absen.sh
+./sync/sync-sheets.sh
+```
+
+---
+
+## 🔐 Security Notes
+
+- **Attendance scripts** contain login credentials - keep secure!
+- **Google credentials** are in `../google-credentials.json`
+- **API keys** should be in environment variables
+- Never commit sensitive data to git
+
+---
+
+## 📖 Related Documentation
+
+- **Workspace Setup:** `../BOOTSTRAP.md`
+- **Persona Configs:** `../persona/`
+- **Agent Instructions:** `../AGENTS.md`
+- **System Instructions:** `../SYSTEM-BOT.md`
+
+---
+
+**Last Updated:** January 29, 2026  
+**Organization:** Categorized by function
