@@ -15,7 +15,18 @@ start() {
     echo "🚀 Starting moltbot gateway..."
     cd "$MOLTBOT_DIR"
     
-    # Start gateway di background
+    # Load LaunchAgent if exists (prefer Mac app method)
+    if [ -f ~/Library/LaunchAgents/bot.molt.gateway.plist ]; then
+        echo "🔐 Loading LaunchAgent..."
+        launchctl load ~/Library/LaunchAgents/bot.molt.gateway.plist 2>/dev/null
+        sleep 2
+        if pgrep -f "moltbot.*gateway" > /dev/null 2>&1; then
+            echo "✅ Gateway started via LaunchAgent"
+            return 0
+        fi
+    fi
+    
+    # Fallback: manual start
     nohup pnpm moltbot gateway run --bind loopback --port 18789 > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
     
@@ -32,25 +43,28 @@ start() {
 }
 
 stop() {
-    if [ ! -f "$PID_FILE" ]; then
-        echo "⚠️  PID file not found. Killing by process name..."
-        pkill -9 -f moltbot-gateway
-        echo "✅ Killed all moltbot-gateway processes"
-        return 0
+    echo "🛑 Stopping moltbot gateway..."
+    
+    # Unload LaunchAgent if exists (Mac app auto-restart)
+    if [ -f ~/Library/LaunchAgents/bot.molt.gateway.plist ]; then
+        echo "🔓 Unloading LaunchAgent..."
+        launchctl unload ~/Library/LaunchAgents/bot.molt.gateway.plist 2>/dev/null
     fi
     
-    PID=$(cat "$PID_FILE")
-    echo "🛑 Stopping gateway (PID: $PID)..."
+    # Kill all moltbot gateway processes (parent + children)
+    pkill -9 -f "moltbot.*gateway" 2>/dev/null
     
-    if kill -0 $PID 2>/dev/null; then
-        kill -9 $PID
-        rm -f "$PID_FILE"
-        echo "✅ Gateway stopped"
-    else
-        echo "⚠️  Process not running, cleaning up..."
-        rm -f "$PID_FILE"
-        pkill -9 -f moltbot-gateway
+    # Clean up PID file
+    rm -f "$PID_FILE"
+    
+    # Verify all killed
+    sleep 1
+    if pgrep -f "moltbot.*gateway" > /dev/null 2>&1; then
+        echo "⚠️  Some processes still running, forcing kill..."
+        pkill -9 -f "moltbot"
     fi
+    
+    echo "✅ Gateway stopped (LaunchAgent unloaded)"
 }
 
 restart() {
@@ -79,9 +93,9 @@ status() {
         fi
     else
         # Check by process name
-        if pgrep -f moltbot-gateway > /dev/null; then
+        if pgrep -f "moltbot.*gateway" > /dev/null; then
             echo "⚠️  Status: Running (no PID file)"
-            echo "PIDs: $(pgrep -f moltbot-gateway | tr '\n' ' ')"
+            echo "PIDs: $(pgrep -f 'moltbot.*gateway' | tr '\n' ' ')"
         else
             echo "⭕ Status: Stopped"
         fi
