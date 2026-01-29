@@ -5,7 +5,9 @@ Usage: python3 create-bug-ticket.py "TITLE" "DESCRIPTION" [SEVERITY]
 """
 import sys
 import json
+import os
 from datetime import datetime
+from pathlib import Path
 
 try:
     from notion_client import Client
@@ -14,14 +16,33 @@ except ImportError:
     print("Install with: pip install notion-client")
     sys.exit(1)
 
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.parent / '.env'
+    load_dotenv(dotenv_path=env_path)
+except ImportError:
+    pass  # dotenv optional
+
 CREDENTIALS_FILE = "/Users/ahmadfaris/moltbot-workspace/notion-credentials.json"
 
 def load_credentials():
+    # Try .env first
+    notion_token = os.getenv('NOTION_TOKEN')
+    database_bug = os.getenv('DATABASE_BUG')
+    
+    if notion_token and database_bug:
+        return {
+            'notion_token': notion_token,
+            'database_bug': database_bug
+        }
+    
+    # Fallback to JSON
     try:
         with open(CREDENTIALS_FILE, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        print(f"❌ Error: {CREDENTIALS_FILE} not found")
+        print(f"❌ Error: Credentials not found")
+        print("Set NOTION_TOKEN & DATABASE_BUG in .env or create notion-credentials.json")
         sys.exit(1)
     except json.JSONDecodeError:
         print(f"❌ Error: {CREDENTIALS_FILE} is not valid JSON")
