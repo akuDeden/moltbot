@@ -101,11 +101,92 @@ Support berbagai format:
 
 ---
 
-### COMMAND 2: LIST DEV/SPRINT TICKETS
+### COMMAND 2: QUERY TICKETS (N8N - RECOMMENDED) ⚡
+
+**NEW:** Dynamic ticket queries via n8n webhook (more flexible & powerful)
+
+**Trigger:** query tiket, cari tiket, tickets, sprint tickets, filter tickets
+
+**WHEN TO USE:**
+- ✅ Complex queries with multiple filters
+- ✅ Real-time API-based queries
+- ✅ When n8n workflow is deployed
+- ✅ Need formatted/grouped output
+
+**QUICK COMMANDS:**
+
+```bash
+# Sprint queries
+/Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-tickets.sh sprint "Sprint 2"
+
+# Status filter
+/Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-tickets.sh status "In Progress"
+
+# Search by keywords
+/Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-tickets.sh search "sales"
+
+# Filter by assignee
+/Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-tickets.sh assignee "Ahmad"
+
+# Get all tickets
+/Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-tickets.sh all
+```
+
+**ADVANCED (Python):**
+
+```bash
+# Multiple filters
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-query-tickets.py \
+  --sprint "Sprint 2" \
+  --status "In Progress" \
+  --assignee "Ahmad" \
+  --output compact
+
+# Search with priority
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-query-tickets.py \
+  --keywords "api" \
+  --priority "High" \
+  --limit 20
+
+# Full JSON output
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-query-tickets.py \
+  --sprint "Sprint 2" \
+  --output json
+
+# Just URLs (pipe to open)
+python3 /Users/ahmadfaris/moltbot-workspace/scripts/tickets/n8n-query-tickets.py \
+  --status "Done" \
+  --output urls
+```
+
+**Output Formats:**
+- `text` - Full formatted report (default)
+- `compact` - Brief list with key info
+- `json` - Full JSON response
+- `urls` - Just ticket URLs
+
+**Examples:**
+- "cari tiket sprint 2" → `n8n-tickets.sh sprint "Sprint 2"`
+- "tiket in progress dari ahmad" → `n8n-query-tickets.py --status "In Progress" --assignee "Ahmad"`
+- "tiket sales" → `n8n-tickets.sh search "sales"`
+- "high priority sprint 2" → `n8n-query-tickets.py --sprint "Sprint 2" --priority "High"`
+
+**Prerequisites:**
+- N8N workflow deployed (see `docs/N8N-DYNAMIC-TICKETS.md`)
+- N8N_WEBHOOK_URL set in `.env`
+
+---
+
+### COMMAND 2B: LIST DEV/SPRINT TICKETS (Legacy - Direct Notion API)
 
 **Trigger:** cek tiket sprint, list dev tickets, tiket development, sprint [number]
 
 **DATABASE:** Development Database (32e29af7d7dd4df69310270de8830d1a)
+
+**WHEN TO USE:**
+- ✅ N8N not available
+- ✅ Simple queries without complex filters
+- ✅ Direct Notion API access needed
 
 **ACTION:**
 1. **Set environment:**

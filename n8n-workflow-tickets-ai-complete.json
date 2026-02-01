@@ -1,0 +1,268 @@
+{
+  "name": "Notion Tickets dengan AI Parser",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "query-tickets",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "query-tickets"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract user query from request\nconst body = $input.first().json.body || {};\nconst query = $input.first().json.query || {};\n\n// Get the natural language query or structured params\nconst userQuery = body.query || query.query || body.message || query.message || '';\n\n// Check if already structured (skip AI if params provided)\nconst hasStructuredParams = body.sprint || body.status || body.keywords || query.sprint || query.status;\n\nreturn [{\n  json: {\n    userQuery: userQuery,\n    useAI: !hasStructuredParams && userQuery.length > 0,\n    rawBody: body,\n    rawQuery: query,\n    databaseId: body.database_id || query.database_id || '32e29af7d7dd4df69310270de8830d1a'\n  }\n}];"
+      },
+      "id": "check-input-001",
+      "name": "Check Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.useAI }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-001",
+      "name": "Need AI?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-small-latest\",\n  \"temperature\": 0.1,\n  \"max_tokens\": 500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a query parser that converts natural language questions into structured database query parameters. Respond ONLY with valid JSON.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"User query: {{ $('Check Input').first().json.userQuery }}\\n\\nExtract the following parameters from the query:\\n- sprint: Sprint name (e.g., \\\"Sprint 1\\\", \\\"Sprint 2\\\") \\n- status: Ticket status (e.g., \\\"Not started\\\", \\\"In progress\\\", \\\"Done\\\", \\\"Blocked\\\")\\n- keywords: Search keywords in ticket title\\n- assignee: Person assigned to the ticket\\n- priority: Priority level (e.g., \\\"High\\\", \\\"Medium\\\", \\\"Low\\\")\\n- tags: Array of tags\\n- limit: Number of results (default 100)\\n\\nRespond ONLY with valid JSON in this exact format:\\n{\\n  \\\"sprint\\\": \\\"Sprint 1\\\" or \\\"\\\",\\n  \\\"status\\\": \\\"In progress\\\" or \\\"\\\",\\n  \\\"keywords\\\": \\\"search term\\\" or \\\"\\\",\\n  \\\"assignee\\\": \\\"name\\\" or \\\"\\\",\\n  \\\"priority\\\": \\\"High\\\" or \\\"\\\",\\n  \\\"tags\\\": [\\\"tag1\\\", \\\"tag2\\\"] or [],\\n  \\\"limit\\\": 100\\n}\\n\\nExamples:\\n\\\"cari ticket sprint 1 yang in progress\\\" → {\\\"sprint\\\": \\\"Sprint 1\\\", \\\"status\\\": \\\"In progress\\\", \\\"keywords\\\": \\\"\\\", \\\"assignee\\\": \\\"\\\", \\\"priority\\\": \\\"\\\", \\\"tags\\\": [], \\\"limit\\\": 100}\\n\\\"show me high priority bugs\\\" → {\\\"sprint\\\": \\\"\\\", \\\"status\\\": \\\"\\\", \\\"keywords\\\": \\\"\\\", \\\"assignee\\\": \\\"\\\", \\\"priority\\\": \\\"High\\\", \\\"tags\\\": [\\\"bug\\\"], \\\"limit\\\": 100}\\n\\\"ticket ahmad yang belum selesai\\\" → {\\\"sprint\\\": \\\"\\\", \\\"status\\\": \\\"In progress\\\", \\\"keywords\\\": \\\"\\\", \\\"assignee\\\": \\\"ahmad\\\", \\\"priority\\\": \\\"\\\", \\\"tags\\\": [], \\\"limit\\\": 100}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "mistral-http-001",
+      "name": "Mistral API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 200],
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "8nwgO5McHlsPVJCF",
+          "name": "mistral_creds_main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Mistral API response\nconst mistralResponse = $input.first().json;\nconst originalData = $('Check Input').first().json;\n\ntry {\n  // Mistral API returns: { choices: [{ message: { content: \"...\" } }] }\n  const content = mistralResponse.choices[0].message.content;\n  const aiParams = JSON.parse(content);\n  \n  const params = {\n    databaseId: originalData.databaseId,\n    keywords: originalData.rawBody.keywords || originalData.rawQuery.keywords || aiParams.keywords || '',\n    sprint: originalData.rawBody.sprint || originalData.rawQuery.sprint || aiParams.sprint || '',\n    status: originalData.rawBody.status || originalData.rawQuery.status || aiParams.status || '',\n    assignee: originalData.rawBody.assignee || originalData.rawQuery.assignee || aiParams.assignee || '',\n    priority: originalData.rawBody.priority || originalData.rawQuery.priority || aiParams.priority || '',\n    tags: originalData.rawBody.tags || originalData.rawQuery.tags || aiParams.tags || [],\n    limit: Math.min(parseInt(originalData.rawBody.limit || originalData.rawQuery.limit || aiParams.limit || 100), 100),\n    sortBy: 'last_edited_time',\n    sortDirection: 'descending'\n  };\n  \n  return [{\n    json: {\n      params: params,\n      aiParsed: true,\n      originalQuery: originalData.userQuery\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      params: {\n        databaseId: originalData.databaseId,\n        keywords: originalData.userQuery,\n        sprint: '',\n        status: '',\n        assignee: '',\n        priority: '',\n        tags: [],\n        limit: 100,\n        sortBy: 'last_edited_time',\n        sortDirection: 'descending'\n      },\n      aiParsed: false,\n      error: error.message\n    }\n  }];\n}"
+      },
+      "id": "parse-ai-001",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Direct parsing (no AI)\nconst originalData = $input.first().json;\nconst body = originalData.rawBody || {};\nconst query = originalData.rawQuery || {};\n\nconst params = {\n  databaseId: originalData.databaseId,\n  keywords: body.keywords || query.keywords || body.search || query.search || '',\n  sprint: body.sprint || query.sprint || '',\n  status: body.status || query.status || '',\n  assignee: body.assignee || query.assignee || '',\n  tags: body.tags || query.tags || [],\n  priority: body.priority || query.priority || '',\n  limit: Math.min(parseInt(body.limit || query.limit || 100), 100),\n  sortBy: 'last_edited_time',\n  sortDirection: 'descending'\n};\n\nreturn [{\n  json: {\n    params: params,\n    aiParsed: false\n  }\n}];"
+      },
+      "id": "parse-direct-001",
+      "name": "Parse Direct",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll"
+      },
+      "id": "merge-001",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Notion filter\nconst inputData = $input.first().json;\nconst params = inputData.params;\nconst filters = [];\n\nif (params.sprint) {\n  filters.push({\n    property: 'Sprint',\n    select: { equals: params.sprint }\n  });\n}\n\nif (params.status) {\n  filters.push({\n    property: 'Status',\n    status: { equals: params.status }\n  });\n}\n\nif (params.assignee) {\n  filters.push({\n    property: 'Assignee',\n    people: { contains: params.assignee }\n  });\n}\n\nif (params.priority) {\n  filters.push({\n    property: 'Priority',\n    select: { equals: params.priority }\n  });\n}\n\nif (params.tags && params.tags.length > 0) {\n  const tagArray = Array.isArray(params.tags) ? params.tags : [params.tags];\n  tagArray.forEach(tag => {\n    filters.push({\n      property: 'Tags',\n      multi_select: { contains: tag }\n    });\n  });\n}\n\nlet filterObj = null;\nif (filters.length === 1) {\n  filterObj = filters[0];\n} else if (filters.length > 1) {\n  filterObj = { and: filters };\n}\n\nreturn [{\n  json: {\n    params: params,\n    filter: filterObj,\n    aiParsed: inputData.aiParsed || false,\n    originalQuery: inputData.originalQuery || ''\n  }\n}];"
+      },
+      "id": "build-filter-001",
+      "name": "Build Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $json.params.databaseId }}",
+        "returnAll": false,
+        "limit": "={{ $json.params.limit }}",
+        "options": {
+          "filter": "={{ $json.filter }}",
+          "sort": {
+            "sortValue": [
+              {
+                "key": "={{ $json.params.sortBy }}",
+                "direction": "={{ $json.params.sortDirection }}",
+                "timestamp": true
+              }
+            ]
+          }
+        }
+      },
+      "id": "notion-001",
+      "name": "Get Tickets",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [1650, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "Psc05N9mhSF2f8im",
+          "name": "notion_creds_main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract ticket data\nconst allItems = $input.all();\nconst params = $('Build Filter').first().json.params;\nconst tickets = [];\n\nfor (const item of allItems) {\n  const properties = item.json.properties || {};\n  \n  const titleProp = properties.Name || properties.Title || properties.title || properties.name;\n  let title = 'Untitled';\n  if (titleProp?.title?.[0]?.text?.content) {\n    title = titleProp.title[0].text.content;\n  } else if (titleProp?.rich_text?.[0]?.text?.content) {\n    title = titleProp.rich_text[0].text.content;\n  }\n  \n  if (params.keywords) {\n    const keywordLower = params.keywords.toLowerCase();\n    const titleLower = title.toLowerCase();\n    if (!titleLower.includes(keywordLower)) continue;\n  }\n  \n  const statusProp = properties.Status || properties.status || properties.Workflow;\n  let status = 'No Status';\n  if (statusProp?.status?.name) {\n    status = statusProp.status.name;\n  } else if (statusProp?.select?.name) {\n    status = statusProp.select.name;\n  }\n  \n  const sprintProp = properties.Sprint || properties.sprint;\n  let sprint = 'No Sprint';\n  if (sprintProp?.select?.name) {\n    sprint = sprintProp.select.name;\n  } else if (sprintProp?.rich_text?.[0]?.text?.content) {\n    sprint = sprintProp.rich_text[0].text.content;\n  }\n  \n  const assigneeProp = properties.Assignee || properties.assignee || properties.Assigned;\n  let assignee = 'Unassigned';\n  if (assigneeProp?.people?.[0]?.name) {\n    assignee = assigneeProp.people[0].name;\n  }\n  \n  const priorityProp = properties.Priority || properties.priority;\n  let priority = '';\n  if (priorityProp?.select?.name) {\n    priority = priorityProp.select.name;\n  }\n  \n  const tagsProp = properties.Tags || properties.tags;\n  let tags = [];\n  if (tagsProp?.multi_select) {\n    tags = tagsProp.multi_select.map(tag => tag.name);\n  }\n  \n  tickets.push({\n    id: item.json.id,\n    title: title,\n    status: status,\n    sprint: sprint,\n    assignee: assignee,\n    priority: priority,\n    tags: tags,\n    url: item.json.url,\n    created_time: item.json.created_time,\n    last_edited_time: item.json.last_edited_time\n  });\n}\n\nreturn [{\n  json: {\n    success: true,\n    count: tickets.length,\n    params: params,\n    tickets: tickets,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "extract-001",
+      "name": "Extract Tickets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format response\nconst data = $input.first().json;\nconst tickets = data.tickets || [];\nconst params = data.params || {};\nconst buildData = $('Build Filter').first().json;\n\nlet summary = `📊 *Hasil Query Ticket*\\n\\n`;\n\nif (buildData.aiParsed && buildData.originalQuery) {\n  summary += `Query: \"${buildData.originalQuery}\"\\n`;\n  summary += `(Diparsing otomatis dengan AI ✨)\\n\\n`;\n}\n\nsummary += `Total: ${data.count} ticket\\n`;\n\nif (params.sprint) summary += `Sprint: ${params.sprint}\\n`;\nif (params.status) summary += `Status: ${params.status}\\n`;\nif (params.keywords) summary += `Keywords: \"${params.keywords}\"\\n`;\nif (params.assignee) summary += `Assignee: ${params.assignee}\\n`;\n\nsummary += `\\n---\\n\\n`;\n\nconst groupedByStatus = {};\ntickets.forEach(ticket => {\n  const status = ticket.status || 'No Status';\n  if (!groupedByStatus[status]) groupedByStatus[status] = [];\n  groupedByStatus[status].push(ticket);\n});\n\nfor (const [status, statusTickets] of Object.entries(groupedByStatus)) {\n  summary += `\\n*${status}* (${statusTickets.length}):\\n`;\n  \n  statusTickets.forEach((ticket, idx) => {\n    summary += `\\n${idx + 1}. *${ticket.title}*\\n`;\n    summary += `   Sprint: ${ticket.sprint}\\n`;\n    summary += `   Assignee: ${ticket.assignee}\\n`;\n    if (ticket.priority) summary += `   Priority: ${ticket.priority}\\n`;\n    if (ticket.tags && ticket.tags.length > 0) summary += `   Tags: ${ticket.tags.join(', ')}\\n`;\n    summary += `   🔗 ${ticket.url}\\n`;\n  });\n  \n  summary += `\\n`;\n}\n\nsummary += `\\n---\\n⏰ Generated: ${new Date(data.timestamp).toLocaleString('id-ID')}\\n`;\n\nreturn [{\n  json: {\n    success: true,\n    message: summary,\n    data: data,\n    formatted: {\n      text: summary,\n      markdown: summary,\n      count: data.count,\n      grouped_by_status: groupedByStatus\n    }\n  }\n}];"
+      },
+      "id": "format-001",
+      "name": "Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-001",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const error = $input.first().json.error || 'Unknown error';\nconst message = $input.first().json.message || error.toString();\n\nreturn [{\n  json: {\n    success: false,\n    error: message,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "error-001",
+      "name": "Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 500,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-error-001",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2250, 500]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Check Input", "type": "main", "index": 0}]]
+    },
+    "Check Input": {
+      "main": [[{"node": "Need AI?", "type": "main", "index": 0}]]
+    },
+    "Need AI?": {
+      "main": [
+        [{"node": "Mistral API", "type": "main", "index": 0}],
+        [{"node": "Parse Direct", "type": "main", "index": 0}]
+      ]
+    },
+    "Mistral API": {
+      "main": [[{"node": "Parse AI Response", "type": "main", "index": 0}]]
+    },
+    "Parse AI Response": {
+      "main": [[{"node": "Merge", "type": "main", "index": 0}]]
+    },
+    "Parse Direct": {
+      "main": [[{"node": "Merge", "type": "main", "index": 1}]]
+    },
+    "Merge": {
+      "main": [[{"node": "Build Filter", "type": "main", "index": 0}]]
+    },
+    "Build Filter": {
+      "main": [[{"node": "Get Tickets", "type": "main", "index": 0}]]
+    },
+    "Get Tickets": {
+      "main": [
+        [{"node": "Extract Tickets", "type": "main", "index": 0}],
+        [{"node": "Error", "type": "main", "index": 0}]
+      ]
+    },
+    "Extract Tickets": {
+      "main": [[{"node": "Format", "type": "main", "index": 0}]]
+    },
+    "Format": {
+      "main": [[{"node": "Respond", "type": "main", "index": 0}]]
+    },
+    "Error": {
+      "main": [[{"node": "Respond Error", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-30T00:00:00.000Z",
+  "versionId": "1"
+}
