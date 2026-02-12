@@ -2,128 +2,364 @@
 
 ## 🎯 Overview
 
-Chronicle adalah platform untuk [deskripsi singkat produk - silakan diisi sesuai produk actual].
+Chronicle adalah platform manajemen pemakaman (cemetery management) yang memungkinkan organisasi pemakaman untuk mengelola plot, pemakaman, penjualan, dan operasional sehari-hari dengan sistem digital yang terintegrasi.
 
-## 🔄 Product Flow
+Platform ini dirancang untuk tiga peran utama:
+- **Owner**: Pengelola organisasi dengan akses penuh ke konfigurasi dan laporan
+- **Admin**: Administrator operasional untuk manajemen harian
+- **Manager**: Manajer lapangan untuk approval dan monitoring
 
-### 1. User Journey
+---
 
-```
-[User] → [Entry Point] → [Core Features] → [Output/Result]
-```
+## 🔐 Authentication Flow
 
-#### Step 1: [Entry Point]
-- User melakukan [action]
-- Sistem menerima [input]
-- Validasi [data]
+Chronicle menyediakan beberapa metode autentikasi untuk fleksibilitas dan keamanan:
 
-#### Step 2: [Processing]
-- Data diproses melalui [component]
-- [Business logic] diterapkan
-- [Integration] dengan sistem lain
+### Login Methods
 
-#### Step 3: [Output]
-- Hasil ditampilkan ke user
-- Data disimpan di [storage]
-- Notifikasi/feedback diberikan
-
-### 2. System Architecture
-
-```
-┌─────────────┐
-│   Frontend  │
-└──────┬──────┘
-       │
-┌──────▼──────┐
-│   Backend   │
-└──────┬──────┘
-       │
-┌──────▼──────┐
-│  Database   │
-└─────────────┘
+```mermaid
+graph TD
+    A[Login Page] --> B{Choose Method}
+    B -->|Social Login| C[Google/Microsoft SSO]
+    B -->|Email| D[Chronicle Account]
+    C --> E{Authenticate}
+    D --> E
+    E -->|Success| F[Dashboard]
+    E -->|Failed| G[Error Message]
+    G --> A
+    F --> H{Role Detection}
+    H -->|Owner| I[Owner Dashboard]
+    H -->|Admin| J[Admin Dashboard]
+    H -->|Manager| K[Manager Dashboard]
 ```
 
-**Components:**
-- **Frontend**: [Technology stack, responsibilities]
-- **Backend**: [API, business logic, integrations]
-- **Database**: [Data storage, schema]
+**User Journey:**
 
-### 3. Core Workflows
+| Stage | User Action | System Response |
+|-------|-------------|-----------------|
+| **Selection** | User chooses authentication method (Social, SSO, or Email) | Highlights selected field or redirects to third-party provider |
+| **Input** | User enters email and password | Validates data format in real-time |
+| **Preference** | User toggles "Remember me" | Stores session cookie for future access |
+| **Execution** | User clicks "LOGIN" | Authenticates credentials and grants dashboard access |
+| **Recovery** | User clicks "Forgot password?" or "Sign up for free" | Redirects to password reset or registration page |
 
-#### Workflow A: [Workflow Name]
-1. User action: [description]
-2. System response: [description]
-3. Result: [description]
+---
 
-#### Workflow B: [Workflow Name]
-1. User action: [description]
-2. System response: [description]
-3. Result: [description]
+## 📊 Dashboard Overview
 
-## 💡 Key Concepts
+Setelah login, user diarahkan ke dashboard utama yang terdiri dari beberapa view mode:
 
-### Concept 1: [Name]
-**Definisi**: [Explanation]
+### 1. Dashboard - Map View
 
-**Contoh**: [Practical example]
+Interface dual-pane yang menggabungkan data administratif dengan visualisasi geospasial:
 
-### Concept 2: [Name]
-**Definisi**: [Explanation]
+**Left Pane (Statistics):**
+- Total Plots
+- Occupied status
+- Vacant plots
+- Total Interments
 
-**Contoh**: [Practical example]
+**Right Pane (Interactive Map):**
+- Satellite map overlay
+- Lot sections and boundaries
+- Region of Interest (ROI) markers
+- Clickable plot locations
 
-## 🔗 Integration Points
+**User Flow:**
+```
+Orientation → Data Assessment → Spatial Correlation → Drill-Down → Management Actions
+```
 
-Chronicle terintegrasi dengan:
-- **[System A]**: [Purpose, how it works]
-- **[System B]**: [Purpose, how it works]
+---
+
+### 2. Dashboard - Tables View
+
+Data-rich interface untuk audit dan manajemen inventory plot:
+
+**Features:**
+- Searchable plot inventory
+- Status filtering (Vacant, Reserved, Occupied, Maintenance)
+- Sortable columns
+- Bulk actions
+- Export capabilities
+
+**Lifecycle Management:**
+```
+Vacant Land → Reserved → Occupied → Maintenance/Memorialized
+```
+
+---
+
+### 3. Dashboard - Calendar View
+
+Event management dan scheduling:
+
+**Capabilities:**
+- Burial scheduling
+- Event planning
+- Maintenance scheduling
+- Request tracking
+- Multi-view (Month, Week, Day)
+
+---
+
+### 4. Dashboard - Requests
+
+Request management system untuk burial applications:
+
+**Workflow:**
+```mermaid
+graph LR
+    A[New Request] --> B[Pending Review]
+    B --> C{Approval}
+    C -->|Approved| D[Scheduled]
+    C -->|Rejected| E[Declined]
+    D --> F[Completed]
+```
+
+---
+
+### 5. Dashboard - Sales
+
+Sales tracking dan revenue management:
+
+**Metrics:**
+- Plot sales
+- Revenue tracking
+- Payment status
+- Sales analytics
+- Customer records
+
+---
+
+### 6. Dashboard - Reports
+
+Comprehensive reporting system:
+
+**Report Types:**
+- Inventory reports
+- Financial reports
+- Occupancy analytics
+- Custom reports
+- Export to PDF/Excel
+
+---
+
+## ⚙️ Organization Configuration
+
+Centralized configuration hub (accessible by Owner and Admin):
+
+### Configuration Sections:
+
+#### 1. General Settings
+- Organization name and details
+- Contact information
+- Operating hours
+- Notification preferences
+
+#### 2. Cemeteries Management
+- Multiple cemetery locations
+- Cemetery-specific settings
+- Plot layout configuration
+- Section/lot definitions
+
+#### 3. Access Control
+- User management
+- Role assignments
+- Permission settings
+- Invitation system
+
+#### 4. Custom Fields
+- Define custom data fields
+- Field types (text, number, date, dropdown)
+- Validation rules
+- Field visibility settings
+
+#### 5. Sales Configuration
+- Pricing models
+- Payment methods
+- Tax settings
+- Invoice templates
+
+#### 6. Event Types
+- Burial types
+- Ceremony types
+- Custom event categories
+
+#### 7. Business Types
+- Service categories
+- Package offerings
+
+#### 8. Regional Settings
+- Language preferences
+- Date/time formats
+- Currency settings
+- Timezone configuration
+
+#### 9. Certificates
+- Certificate templates
+- Digital signatures
+- Automated generation
+
+#### 10. Forms
+- Custom form builder
+- Data collection templates
+- Submission workflows
+
+---
+
+## 👤 Profile Management
+
+**My Profile** section memungkinkan setiap user untuk:
+- Update personal information
+- Change password
+- Notification preferences
+- Profile photo
+- Contact details
+
+---
+
+## 🔄 Core Workflows
+
+### Workflow 1: Plot Sales Process
+
+```mermaid
+graph TD
+    A[Customer Inquiry] --> B[Check Availability]
+    B --> C[Plot Selection]
+    C --> D[Price Calculation]
+    D --> E[Payment Processing]
+    E --> F[Plot Reservation]
+    F --> G[Documentation]
+    G --> H[Certificate Issuance]
+```
+
+---
+
+### Workflow 2: Burial Request Process
+
+```mermaid
+graph TD
+    A[Submit Request] --> B[Document Verification]
+    B --> C[Manager Review]
+    C --> D{Approval Decision}
+    D -->|Approved| E[Schedule Burial]
+    D -->|Rejected| F[Notify Requestor]
+    E --> G[Coordinate Ceremony]
+    G --> H[Execute Burial]
+    H --> I[Update Records]
+    I --> J[Mark Plot as Occupied]
+```
+
+---
+
+### Workflow 3: Manager Invitation & Onboarding
+
+```mermaid
+graph LR
+    A[Owner/Admin Sends Invitation] --> B[Manager Receives Email]
+    B --> C[Click Invitation Link]
+    C --> D[Account Setup]
+    D --> E[Password Creation]
+    E --> F[Access Dashboard]
+```
+
+---
+
+## 🎨 User Interface Components
+
+### Navigation Structure
+
+**Top Bar:**
+- Organization switcher
+- Global search
+- Notifications
+- User profile menu
+
+**Sidebar Menu:**
+- Dashboard (Map, Tables, Calendar)
+- Requests
+- Sales
+- Reports
+- Organization (Owner/Admin only)
+- My Profile
+- Help
+- About
+- Logout
+
+**Toolbar (Context-Aware):**
+- Quick actions based on current view
+- Filters and sorting
+- Export options
+- Bulk operations
+
+---
+
+## 📱 Platform Support
+
+- **Web Application**: Full-featured browser-based interface
+- **Responsive Design**: Optimized for desktop, tablet, and mobile
+- **Cross-Browser**: Chrome, Firefox, Safari, Edge
+- **Performance**: Optimized for fast loading and smooth interactions
+
+---
+
+## 🔐 Security & Access Control
+
+### Role-Based Access Control (RBAC)
+
+| Feature | Owner | Admin | Manager |
+|---------|-------|-------|---------|
+| Dashboard Access | ✅ | ✅ | ✅ |
+| Organization Config | ✅ | ✅ | ❌ |
+| User Management | ✅ | ✅ | ❌ |
+| Request Approval | ✅ | ✅ | ✅ |
+| Reports | ✅ Full | ✅ Full | ✅ Limited |
+| Sales Management | ✅ | ✅ | ❌ |
+
+### Authentication Security
+- Encrypted password storage
+- Session management
+- "Remember me" functionality
+- Password recovery flow
+- Social login integration (Google, Microsoft)
+
+---
 
 ## 📊 Data Flow
 
 ```
-Input → Validation → Processing → Storage → Output
+User Input → Validation → Processing → Database Storage → Real-time Updates → UI Refresh
 ```
 
-1. **Input**: [Source, format]
-2. **Validation**: [Rules, checks]
-3. **Processing**: [Logic, transformations]
-4. **Storage**: [Database, format]
-5. **Output**: [Display, export]
+**Key Data Entities:**
+1. **Organizations**: Cemetery entities
+2. **Plots**: Individual burial locations
+3. **Interments**: Burial records
+4. **Requests**: Burial applications
+5. **Sales**: Financial transactions
+6. **Events**: Scheduled activities
+7. **Users**: System accounts (Owner, Admin, Manager)
 
-## 🎨 User Interface Flow
+---
 
-### Main Dashboard
-- [Feature 1]
-- [Feature 2]
-- [Feature 3]
+## 🔗 Integration Points
 
-### Feature Pages
-- [Page 1]: [Purpose]
-- [Page 2]: [Purpose]
+Chronicle integrates various components:
+- **Mapping Services**: Satellite imagery and geolocation
+- **Payment Systems**: Transaction processing
+- **Email Services**: Notifications and invitations
+- **Document Generation**: Certificates and reports
+- **Calendar Systems**: Event scheduling
 
-## 🔐 Security & Permissions
-
-- **Authentication**: [How users log in]
-- **Authorization**: [Permission levels]
-- **Data Protection**: [Security measures]
-
-## 📱 Platform Support
-
-- **Web**: [Browser support]
-- **Mobile**: [iOS/Android support]
-- **API**: [API access]
-
-## 🚀 Performance
-
-- **Response Time**: [Typical performance]
-- **Scalability**: [How system scales]
-- **Optimization**: [Performance features]
+---
 
 ## 📚 Related Documentation
 
 - [features.md](features.md) - Detailed feature documentation
-- [faq.md](faq.md) - Common questions about Chronicle flow
+- [faq.md](faq.md) - Common questions about Chronicle
+- [roles/](roles/README.md) - Role-specific user journeys
 
 ---
 
-**Note**: Dokumentasi ini adalah template. Silakan update dengan informasi actual tentang Chronicle product flow.
+**Last Updated**: February 2026

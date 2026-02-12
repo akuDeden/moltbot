@@ -8,6 +8,8 @@ Dokumentasi lengkap tentang Chronicle product - fitur, cara kerja, dan FAQ.
 - **[flow.md](flow.md)** - Chronicle product flow dan arsitektur sistem
 - **[features.md](features.md)** - Dokumentasi fitur-fitur Chronicle
 - **[faq.md](faq.md)** - Frequently Asked Questions
+- **[roles/](roles/README.md)** - Role-specific workflows (Owner, Admin, Manager)
+- **[STRATEGY.md](STRATEGY.md)** - Documentation architecture & strategy
 
 ## 🎯 Cara Menggunakan
 
