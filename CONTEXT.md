@@ -13,6 +13,7 @@
 - `mode auto` - Auto-detect from keywords (default)
 - `mode assistant` - Force Assistant persona (shopping tracker)
 - `mode business` - Force Business Analyst persona
+- `mode knowledge` - Force Knowledge persona (product documentation)
 - `mode qa` - Force QA Engineer persona
 - `mode status` - Show current active mode
 
@@ -42,6 +43,23 @@ When in AUTO mode, bot detects persona from keywords and **loads the correspondi
 
 ---
 
+### Knowledge Keywords
+**Triggers:** `chronicle flow`, `cara kerja chronicle`, `bagaimana chronicle`, `fitur chronicle`, `feature chronicle`, `knowledge base`, `dokumentasi produk`, `dokumentasi chronicle`, `explain chronicle`, `jelaskan chronicle`, `onboarding chronicle`, `arsitektur chronicle`
+
+**Role-specific triggers (also route to Knowledge):**
+- `owner chronicle`, `owner dashboard`, `owner flow`, `role owner`, `organization settings`, `owner permissions`, `manage organization`
+- `admin chronicle`, `admin dashboard`, `admin flow`, `role admin`, `admin reports`, `admin access`, `admin workflow`
+- `manager chronicle`, `manager dashboard`, `manager flow`, `role manager`, `manager invitation`, `manager permissions`, `manager approval`
+- `perbedaan owner admin`, `perbedaan role`, `role chronicle`, `user journey chronicle`
+
+**→ Load:** `persona/KNOWLEDGE.md`
+
+**Persona:** Product knowledge & documentation specialist
+
+**Note:** For Chronicle PRODUCT questions (how it works, features, flow, roles). For Chronicle DEV tickets, use QA persona.
+
+---
+
 ### QA Keywords
 **Triggers:** `review tiket`, `test case`, `bug report`, `UAT`, `QA review`, `testing`, `tiket bug terakhir`, `list bug`, `ada bug`, `catat bug`, `user g bisa`, `test login`, `test browser`, `buka browser`, `buka google`, `cari di google`, `screenshot`, `test staging`, `cek browser`, `cari tiket`, `search tiket`, `carikan tiket`, `ada tiket apa`, `update tiket`, `update status`, `change status`, `ubah status`
 
@@ -57,7 +75,54 @@ Setiap persona memiliki file terpisah dengan commands detail:
 
 - **[persona/ASSISTANT.md](persona/ASSISTANT.md)** - Shopping tracker commands (CRITICAL: simpan belanja, lihat total)
 - **[persona/BUSINESS.md](persona/BUSINESS.md)** - Business analysis commands (analisis pasar, SWOT, competitor)
+- **[persona/KNOWLEDGE.md](persona/KNOWLEDGE.md)** - Product documentation (Chronicle flow, features, FAQ)
 - **[persona/QA.md](persona/QA.md)** - QA commands (CRITICAL: review tiket, test case, bug report)
+
+---
+
+## 🔍 AMBIGUITY DETECTION
+
+### Ambiguous Keywords
+
+Beberapa keyword bisa merujuk ke multiple contexts:
+
+**"chronicle" (standalone)**
+- Could mean: Chronicle **product** (knowledge base) OR Chronicle **dev tickets** (QA)
+- **Detection rule**: If user only says "chronicle" tanpa context clues
+- **Action**: Ask for clarification
+
+### Ambiguity Handler Rules
+
+**WHEN:** User message contains ambiguous keyword WITHOUT clear context
+
+**THEN:** Ask clarification:
+```
+🤔 Maksud Anda chronicle yang mana?
+
+1. 📚 Chronicle product (fitur, cara kerja, dokumentasi)
+2. 🎫 Chronicle development tickets (review tiket, bug, testing)
+
+Ketik 1 atau 2, atau jelaskan lebih detail.
+```
+
+**AFTER USER RESPONDS:**
+- User pilih "1" atau mention "product"/"fitur"/"dokumentasi" → Load `persona/KNOWLEDGE.md`
+- User pilih "2" atau mention "tiket"/"bug"/"testing" → Load `persona/QA.md`
+
+### Context Clues (Skip Ambiguity Check)
+
+Jika ada context clues yang jelas, langsung load persona yang sesuai:
+
+**Knowledge context clues:**
+- "bagaimana", "cara kerja", "fitur", "explain", "dokumentasi"
+- "owner", "admin", "manager", "role", "organization", "user journey"
+- Example: "bagaimana chronicle bekerja" → KNOWLEDGE (no ambiguity)
+- Example: "owner manage organization chronicle" → KNOWLEDGE (no ambiguity)
+- Example: "apa yang bisa dilakukan role owner" → KNOWLEDGE (no ambiguity)
+
+**QA context clues:**
+- "tiket", "bug", "testing", "review", "UAT"
+- Example: "review tiket chronicle" → QA (no ambiguity)
 
 ---
 
